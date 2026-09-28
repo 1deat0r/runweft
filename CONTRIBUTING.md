@@ -22,10 +22,10 @@ for each pull request.
   `docs/<issue>-<slug>`, or `security/<issue>-<slug>`.
 - Every human-authored pull request must identify its GitHub issue with `Closes #N`,
   `Fixes #N`, `Resolves #N`, or `References #N`; CI rejects PR descriptions without
-  a standalone reference outside fenced, indented, or inline code. CI verifies that
-  the referenced number is an issue in this repository; reviewers verify that the
-  issue authorizes the change. Dependabot update PRs may omit an issue reference,
-  but remain subject to all CI and agent-review requirements.
+  a standalone reference before fenced code examples and outside code or HTML
+  comments. CI verifies that the referenced number is an issue in this repository;
+  reviewers verify that the issue authorizes the change. Dependabot update PRs may
+  omit an issue reference, but remain subject to all CI and agent-review requirements.
 - Keep a pull request focused and link its issue with `Closes #<number>` when the
   change fully resolves that issue. Explain scope, contract changes, evidence,
   risks, and anything not checked using the pull request template.

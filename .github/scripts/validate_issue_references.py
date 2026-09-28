@@ -13,48 +13,63 @@ REFERENCE_LINE_RE = re.compile(
     r"^ {0,3}(?:[-*][ \t]+)?(?:closes|fixes|resolves|references)[ \t]+#([0-9]+)(?:[^0-9]|$)",
     re.IGNORECASE,
 )
-FENCE_OPEN_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
-INLINE_CODE_SPAN_RE = re.compile(r"(`+).*?\1")
 NUMBERED_REFERENCE_RE = re.compile(
     r"(?i)\b(?:closes|fixes|resolves|references)[ \t]+#[0-9]+(?:[^0-9]|$)"
 )
-
-
-def _closes_fence(line: str, fence_char: str, fence_length: int) -> bool:
-    candidate = re.sub(r"^ {0,3}", "", line)
-    marker_length = 0
-    while candidate[marker_length : marker_length + 1] == fence_char:
-        marker_length += 1
-    return (
-        marker_length >= fence_length
-        and not candidate[marker_length:].strip()
-    )
+HTML_BLOCK_MARKER_RE = re.compile(
+    r"(?:<!--|<\?|<![A-Za-z]|<!\[CDATA\[|</?[A-Za-z][A-Za-z0-9-]*(?:[ \t/>]|$))",
+    re.IGNORECASE,
+)
 
 
 def extract_issue_numbers(body: str) -> list[int]:
     numbers: set[int] = set()
-    fence_char: str | None = None
-    fence_length = 0
-
+    inline_ticks: int | None = None
     for line in body.splitlines():
-        if fence_char is not None:
-            if _closes_fence(line, fence_char, fence_length):
-                fence_char = None
-                fence_length = 0
+        if inline_ticks is None and (line.startswith("    ") or line.startswith("\t")):
             continue
 
-        opener = FENCE_OPEN_RE.match(line)
-        if opener:
-            marker = opener.group(1)
-            fence_char = marker[0]
-            fence_length = len(marker)
-            continue
+        visible: list[str] = []
+        index = 0
+        while index < len(line):
+            character = line[index]
+            if inline_ticks is None and HTML_BLOCK_MARKER_RE.match(line, index):
+                return sorted(numbers)
+            if character == "`":
+                end = index + 1
+                while end < len(line) and line[end] == "`":
+                    end += 1
+                run_length = end - index
+                if inline_ticks is not None:
+                    if run_length == inline_ticks:
+                        inline_ticks = None
+                    index = end
+                    continue
+                if run_length >= 3:
+                    # Fail closed at any fence marker. Requiring the issue
+                    # reference before code keeps list and mismatched fences
+                    # from being mistaken for a rendered link.
+                    return sorted(numbers)
+                inline_ticks = run_length
+                index = end
+                continue
 
-        if line.startswith("    ") or line.startswith("\t"):
-            continue
+            if character == "~":
+                end = index + 1
+                while end < len(line) and line[end] == "~":
+                    end += 1
+                if inline_ticks is None and end - index >= 3:
+                    return sorted(numbers)
+                if inline_ticks is None:
+                    visible.extend(line[index:end])
+                index = end
+                continue
 
-        without_inline_code = INLINE_CODE_SPAN_RE.sub(" ", line)
-        reference = REFERENCE_LINE_RE.match(without_inline_code)
+            if inline_ticks is None:
+                visible.append(character)
+            index += 1
+
+        reference = REFERENCE_LINE_RE.match("".join(visible))
         if reference:
             numbers.add(int(reference.group(1)))
 

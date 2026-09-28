@@ -24,11 +24,19 @@ class IssueReferenceParsingTest(unittest.TestCase):
             "````\n"
             "Fixes #56\n"
         )
-        self.assertEqual(issue_references.extract_issue_numbers(body), [56])
+        self.assertEqual(issue_references.extract_issue_numbers(body), [])
 
-    def test_ignores_tilde_fenced_references(self) -> None:
+    def test_accepts_reference_before_code_examples_only(self) -> None:
+        body = "Closes #11\n```md\nReferences #22\n```"
+        self.assertEqual(issue_references.extract_issue_numbers(body), [11])
+
+    def test_tilde_fence_stops_issue_scanning(self) -> None:
         body = "~~~md\nReferences #12\n~~~\nResolves #34"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [34])
+        self.assertEqual(issue_references.extract_issue_numbers(body), [])
+
+    def test_ignores_list_item_fenced_reference(self) -> None:
+        body = "- ```text\n  References #12\n  ```"
+        self.assertEqual(issue_references.extract_issue_numbers(body), [])
 
     def test_ignores_inline_and_indented_code_references(self) -> None:
         body = "References `#12`\n    Closes #34\nReferences #56"
@@ -38,6 +46,16 @@ class IssueReferenceParsingTest(unittest.TestCase):
         self.assertEqual(
             issue_references.extract_issue_numbers("This PR closes #12"), []
         )
+
+    def test_ignores_multiline_inline_code_and_accepts_following_reference(self) -> None:
+        body = "Example `some code\nCloses #12\nacross lines`\nFixes #34"
+        self.assertEqual(issue_references.extract_issue_numbers(body), [34])
+
+    def test_html_comments_and_blocks_cannot_supply_references(self) -> None:
+        comment = "<!--\nCloses #12\n-->\nFixes #34"
+        raw_html = "<pre>\nCloses #12\n</pre>\nFixes #34"
+        self.assertEqual(issue_references.extract_issue_numbers(comment), [])
+        self.assertEqual(issue_references.extract_issue_numbers(raw_html), [])
 
     def test_template_example_guard_rejects_numeric_example(self) -> None:
         self.assertTrue(
