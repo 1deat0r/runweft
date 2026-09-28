@@ -1,6 +1,6 @@
 ## Issue and authorization
 
-Closes #
+Issue reference (for example, `References #123`):
 
 - User-authorized scope:
 - Relevant ticket and spec revision:
@@ -16,15 +16,38 @@ Closes #
 
 ## Independent review seats
 
-List reviewers and the frozen commit/diff they inspected. Select seats that apply;
-explain any omitted seat. Normative spec or architecture changes require the full
-board process in `spec.md` §12.
+Keep the JSON receipt in the PR description. CI requires a valid receipt tied to the
+exact head commit, with distinct implementation and evaluation agents. Add all
+risk-based seats. Set `full_board` to true for normative spec/architecture,
+review-policy, workflow, and branch-protection changes. In that case all five
+independent seats must review the same frozen commit before publishing the receipt.
 
-- Systems/durability:
-- Adversarial security:
-- Implementation/developer experience:
-- Evaluation/confounds:
-- Product/scope:
+```agent-review
+{
+  "protocol": "runweft-agent-review/v1",
+  "reviewed_head_sha": "REPLACE_WITH_40_CHARACTER_HEAD_SHA",
+  "implementer_agent": "REPLACE_WITH_IMPLEMENTER_ID",
+  "full_board": false,
+  "required_seats": [
+    "implementation/developer-experience",
+    "evaluation/confounds"
+  ],
+  "reviews": [],
+  "evaluation": {
+    "reviewer_agent": "REPLACE_WITH_EVALUATION_REVIEWER_ID",
+    "result": "PASS",
+    "scope": "REPLACE_WITH_EVALUATION_SCOPE_AND_POTENTIAL_IMPACT",
+    "evidence": "REPLACE_WITH_ACCEPTANCE_EVIDENCE"
+  },
+  "findings": []
+}
+```
+
+Each review item must include `seat`, `reviewer_agent`, `reviewed_head_sha`,
+`verdict` (`APPROVE`), and a concise `summary`. Evaluation may be
+`NOT_APPLICABLE` only with a `reason` instead of `evidence`. Every finding must
+include a stable ID and severity; blockers also include location, impact, a closure
+condition, and closure evidence with a quote from the final diff.
 
 ## Author checklist
 
@@ -34,3 +57,4 @@ board process in `spec.md` §12.
 - [ ] I ran the required checks and recorded omissions honestly.
 - [ ] No credentials, private user data, or vulnerability details are in this public PR.
 - [ ] Every blocking review finding has a verified closure in the final diff.
+- [ ] The receipt names independent review agents and is tied to the current PR head.

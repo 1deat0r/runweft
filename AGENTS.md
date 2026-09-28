@@ -41,20 +41,36 @@ the PR-only rule applies to every subsequent change.
   focused branch, and link the issue in the pull request. An issue, a board vote,
   or CI success does not grant implementation authority. The user must authorize
   the scope; proposed runtime tickets stay proposed until then.
-- Main is protected. A human-authored pull request needs a linked GitHub issue and
-  passing `check (24)` and `check (26)`. Dependabot version-update PRs are exempt
-  from the issue-reference step, but must pass the same checks and review gate.
-  Every PR also needs one approval from a GitHub reviewer other than the latest
-  pusher, resolved review conversations, and a current base branch. Stale approvals
-  are dismissed. Admins follow the same rules; do not bypass them. Merge with squash
-  to keep history linear. If no independent reviewer is available, leave the PR open.
-- The author/implementer does not review their own change. Select independent
-  review roles based on the change: systems/durability, adversarial security,
-  implementation/developer experience, evaluation/confounds, and product/scope.
-  Record which roles reviewed and why any seat was not relevant. Normative spec
-  or architecture decisions use the frozen-snapshot process in `spec.md` §12.
-  Reviewer findings cite exact text, impact, and closure conditions; verify each
-  blocker against the changed artifact before merging.
+- Main is protected. Human-authored PRs need a linked GitHub issue and passing
+  `check (24)`, `check (26)`, and `agent-review-record` checks. Dependabot updates
+  may omit an issue reference, but must pass all checks and agent reviews. Every PR
+  must go through GitHub, use the current base, resolve review conversations, and
+  squash merge to keep history linear. The branch rule requires no GitHub-human
+  approvals; autonomous agent reviews are the project review gate. Direct pushes,
+  local-only completion, and bypassing the project process are prohibited.
+- Each PR requires distinct, independent agent reviewers for implementation /
+  developer experience and evaluation / confounds. Select additional seats based on
+  change risk from systems / durability, adversarial security, and product / scope.
+  Changes to normative specifications or architecture, this review protocol, CI
+  workflows, or branch-protection policy require all five seats on one frozen commit.
+  The implementer cannot review its own work. Record each agent identifier, seat,
+  verdict, reviewed commit SHA, evaluation evidence, numbered findings, and
+  quote-verified blocker closures in the PR's structured review receipt. Any code
+  change after review invalidates the receipt and requires a fresh review of the new
+  head. Never share peer verdicts before reviewers vote.
+- `agent-review-record` checks receipt shape, seat coverage, and SHA consistency; it
+  does not prove that an agent actually ran. Reviewers must be separate agent
+  invocations, and the project maintainer must not treat a self-authored receipt as
+  evidence of an independent review. GitHub has no trusted agent-attestation
+  integration configured, and candidate PRs can edit the workflow and validator
+  that produce this check. Those controls require full five-seat review. Project
+  policy changes require an issue, PR, review, and audit record too; GitHub
+  administrators can technically change repository rules.
+  The project's no-bypass rule is a process requirement, not a claim that the
+  administrator is technically unable to change settings.
+- Normative spec or architecture decisions use the complete frozen-snapshot board
+  process in `spec.md` §12. Reviewer findings cite exact text, impact, and closure
+  conditions; verify every blocker against the changed artifact before merging.
 - Run `npm ci --ignore-scripts` followed by `npm run check` for scaffold changes.
   Report the exact commands and outcomes. Never use live providers, read
   credentials, or treat passing scaffold checks as evidence of runtime security.
