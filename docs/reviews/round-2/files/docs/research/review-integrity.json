@@ -1,0 +1,23 @@
+{
+  "design_revision": "r2",
+  "reviewed_body_sha256": "b5c7a03f0daf25568f31a675cc620a2d08b8d58d3a931164cf5e6104f0748de0",
+  "reviewed_body_matches_final": true,
+  "reviewed_body_scope": "Sections 1\u201313; excludes status header and board appendix",
+  "files": {
+    "implementation-gates.md": "76c1b201d70524796e1d99403ac15bd3c67270db1ec5d2d8763d51211be3cfc6",
+    "evaluation-protocol.md": "5aad8a82dc126189943bdc3386410b709cdfdf316dd23470618dce279e1b516e",
+    "analyze-evaluation.py": "34199264b0e9aed89bee52a9a71dff91c6d9f1390142369b3b52fc67e9a21739",
+    "runweft-architecture.json": "fab20236ed1b4ac85f2068afd7967ae41577fe83b75d6491ddd63973280811b5",
+    "runweft-architecture.html": "6917c37e98f3f250eb5aad80ce4740778989f1d2297a93cf8f4072ef5b3baf88"
+  },
+  "final_votes": {
+    "A": "BUILD",
+    "B": "BUILD",
+    "C": "BUILD",
+    "D": "BUILD",
+    "E": "BUILD"
+  },
+  "unresolved_material_blockers": 0,
+  "analysis_self_test": "passed; synthetic arithmetic and decision rules only",
+  "omO_baseline": "713775cedd533d00c2048ec6dc677f942f3b2ad0"
+}

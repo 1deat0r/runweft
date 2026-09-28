@@ -1,0 +1,14 @@
+:root { font-family: system-ui, sans-serif; color: #e6edf3; background: #0c1420; color-scheme: dark; line-height: 1.6; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 900px; margin: 0 auto; padding: clamp(24px, 6vw, 72px) 24px; }
+.eyebrow { color: #72dfc4; font-size: .8rem; letter-spacing: .12em; }
+h1 { font-size: clamp(2.2rem, 6vw, 4.2rem); line-height: 1.1; font-weight: 650; margin: 24px 0; }
+.intro { max-width: 600px; font-size: 1.2rem; color: #b9c7d6; margin-bottom: 40px; }
+section { border: 1px solid #344459; border-radius: 12px; padding: 24px; margin: 18px 0; background: #142131; }
+h2 { font-size: 1.15rem; margin: 0 0 16px; }
+dl { display: grid; grid-template-columns: minmax(140px, 1fr) 2fr; gap: 8px 20px; }
+dt { color: #b9c7d6; } dd { margin: 0; }
+code { color: #72dfc4; overflow-wrap: anywhere; }
+footer { color: #b9c7d6; margin-top: 32px; font-size: .9rem; }
+@media (max-width: 450px) { dl { grid-template-columns: 1fr; } dd { margin-bottom: 8px; } }

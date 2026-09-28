@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-28",
+  "spec_revision": "S2",
+  "verdict": "BUILD",
+  "approvals": 5,
+  "open_material_blockers": 0,
+  "canonical_project": "/mnt/data/AI Agents/Runweft",
+  "user_requested_alias": "/run/media/its1deat0r/Projects/AI Agents/Runweft",
+  "same_directory_verified": true,
+  "reviewed_spec_sha256": "fd254bafe68dda434ed03074c05264d8c73014a3247186c60f89249ce07f3655",
+  "delivered_spec_sha256": "1f4a3c1e7ef3e441fade9bb36c7112b1f1dc04713cdc3c37a7fc9e284d0e502d",
+  "normative_sections_1_to_11_sha256": "6c1293f6ff8e256e192e079a45b05e86983a2b1048701704cb3e66d83b95d8e5",
+  "normative_sections_unchanged": true,
+  "reviewed_file_count": 73,
+  "post_vote_changed_reviewed_files": {
+    "spec.md": "approval and board record metadata only",
+    "STATE.md": "delivery and next-action metadata only"
+  },
+  "runtime_source_and_lockfiles_changed_after_checks": false,
+  "review_manifest_sha256": "e1450d2192b369e6c527c54e1b911f9fa93bb1c73d1536b77fea7540f113fb2f",
+  "board_records_sha256": {
+    "build.md": "7d9498e97e32468ac73d68e1e8c3afc185d92889258c5becd7193d381d67c175",
+    "evaluation.md": "05dd0f84a9a4769bd6684f7f339fe04e27d00ff3b5420ad3c086272cfd9e920c",
+    "product.md": "87bacce569390c0a79d3a321772339258957d426dbf510dc8051a361a31779fc",
+    "security.md": "666718b0bf70be407a6c03c8156fe40bf3684f8eb15abbd52ad7dfb112c9eca3",
+    "systems.md": "018fa783c6b7cea83972bdc90073e100a5e035e38f4a557b351627f47ea29c22"
+  },
+  "scaffold_evidence_sha256": "94b89e73814bbe4d4e0307dc3e7801b8694530a5594000937f41d381c32526b3",
+  "runtime_implemented": false,
+  "remote_configured": false,
+  "commits_created": false
+}

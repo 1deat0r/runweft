@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/home/its1deat0r/Documents/Codex/2026-09-28/how-would-you-build-a-successor-2/outputs/runweft-architecture.json",
+  "output": "/home/its1deat0r/Documents/Codex/2026-09-28/how-would-you-build-a-successor-2/outputs/runweft-architecture.html",
+  "specification": {
+    "sha256": "fab20236ed1b4ac85f2068afd7967ae41577fe83b75d6491ddd63973280811b5",
+    "bytes": 4700
+  },
+  "artifact": {
+    "sha256": "6917c37e98f3f250eb5aad80ce4740778989f1d2297a93cf8f4072ef5b3baf88",
+    "bytes": 810965
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

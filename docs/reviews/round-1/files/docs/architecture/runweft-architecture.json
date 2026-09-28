@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Runweft \u00b7 proposed execution architecture",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1320,
+      760
+    ]
+  },
+  "components": [
+    {
+      "id": "rw-clients",
+      "type": "frontend",
+      "label": "User interfaces",
+      "sublabel": "Rust CLI \u00b7 TypeScript UI",
+      "pos": [
+        50,
+        330
+      ],
+      "size": [
+        210,
+        80
+      ]
+    },
+    {
+      "id": "rw-kernel",
+      "type": "backend",
+      "label": "Run kernel",
+      "sublabel": "Rust \u00b7 graph / budget / recovery",
+      "pos": [
+        380,
+        330
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-broker",
+      "type": "security",
+      "label": "Capability broker",
+      "sublabel": "Rust \u00b7 authorize every effect",
+      "pos": [
+        710,
+        330
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-workers",
+      "type": "backend",
+      "label": "Isolated workers",
+      "sublabel": "Rust supervisor \u00b7 OS sandbox",
+      "pos": [
+        1040,
+        330
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-ledger",
+      "type": "database",
+      "label": "Durable ledger",
+      "sublabel": "SQLite + artifact files",
+      "pos": [
+        380,
+        70
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-models",
+      "type": "external",
+      "label": "Model providers",
+      "sublabel": "Versioned TypeScript adapters",
+      "pos": [
+        710,
+        70
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-evidence",
+      "type": "backend",
+      "label": "Verification",
+      "sublabel": "Checks bound to artifact digest",
+      "pos": [
+        1040,
+        70
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-context",
+      "type": "database",
+      "label": "Context and memory",
+      "sublabel": "Scoped retrieval \u00b7 provenance",
+      "pos": [
+        380,
+        590
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-extensions",
+      "type": "external",
+      "label": "Tools and extensions",
+      "sublabel": "MCP \u00b7 LSP \u00b7 TypeScript / Wasm",
+      "pos": [
+        710,
+        590
+      ],
+      "size": [
+        220,
+        80
+      ]
+    },
+    {
+      "id": "rw-workspaces",
+      "type": "database",
+      "label": "Task workspaces",
+      "sublabel": "Snapshots \u00b7 isolated checkouts",
+      "pos": [
+        1040,
+        590
+      ],
+      "size": [
+        220,
+        80
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "rw-submit",
+      "from": "rw-clients",
+      "to": "rw-kernel",
+      "label": "submit",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rw-admit",
+      "from": "rw-kernel",
+      "to": "rw-broker",
+      "label": "dispatch",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rw-execute",
+      "from": "rw-broker",
+      "to": "rw-workers",
+      "label": "grant",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rw-commit",
+      "from": "rw-kernel",
+      "to": "rw-ledger",
+      "label": "commit events"
+    },
+    {
+      "id": "rw-retrieve",
+      "from": "rw-kernel",
+      "to": "rw-context",
+      "label": "retrieve",
+      "labelDy": 24
+    },
+    {
+      "id": "rw-infer",
+      "from": "rw-broker",
+      "to": "rw-models",
+      "label": "scoped inference",
+      "variant": "security"
+    },
+    {
+      "id": "rw-tools",
+      "from": "rw-broker",
+      "to": "rw-extensions",
+      "label": "scoped calls",
+      "variant": "security",
+      "labelDy": 24
+    },
+    {
+      "id": "rw-check",
+      "from": "rw-workers",
+      "to": "rw-evidence",
+      "label": "verify results"
+    },
+    {
+      "id": "rw-files",
+      "from": "rw-workers",
+      "to": "rw-workspaces",
+      "label": "stage changes",
+      "labelDy": 24
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "One authority",
+      "items": [
+        "Logical modules, not ten services.",
+        "Rust kernel owns all durable transitions."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Explicit boundaries",
+      "items": [
+        "Every external effect crosses the broker.",
+        "Responses return along the shown paths."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Evidence before completion",
+      "items": [
+        "Verification receipts return to the kernel.",
+        "2027 extensions preserve the same contract."
+      ]
+    }
+  ]
+}

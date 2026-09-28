@@ -1,0 +1,19 @@
+[workspace]
+members = ["crates/runweft-protocol", "crates/runweft-core", "crates/runweft-cli", "crates/runweft-daemon"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0-dev"
+edition = "2024"
+rust-version = "1.98"
+license = "Apache-2.0"
+publish = false
+
+[workspace.dependencies]
+runweft-protocol = { path = "crates/runweft-protocol" }
+runweft-core = { path = "crates/runweft-core" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

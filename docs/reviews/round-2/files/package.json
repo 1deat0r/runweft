@@ -1,0 +1,27 @@
+{
+  "name": "runweft-workspace",
+  "version": "0.1.0-dev",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@11.19.0",
+  "engines": {
+    "node": ">=24 <27"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate-protocol.mjs",
+    "check:generated": "node scripts/generate-protocol.mjs --check",
+    "typecheck": "tsc -b",
+    "build": "tsc -b && npm run build --workspace @runweft/inspector",
+    "test": "tsc -b && node --test tests/scaffold.test.mjs",
+    "dev": "npm run dev --workspace @runweft/inspector",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "@types/node": "24.19.0"
+  }
+}
