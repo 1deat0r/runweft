@@ -24,8 +24,10 @@ BASE_SEATS = {
 FULL_BOARD_SEATS = SEATS
 SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 PLACEHOLDER_RE = re.compile(
-    r"(?i)(?:REPLACE[_ -]?WITH|WHY THIS SEAT|^\s*(?:TODO|TBD|PLACEHOLDER)\b)"
+    r"(?i)(?:REPLACE[_ -]?WITH|WHY THIS SEAT|^\s*(?:TODO|TBD|PLACEHOLDER)\b|"
+    r"^\s*(?:N\s*/\s*A|N\.?\s*A|NOT\s+APPLICABLE)\s*[.!]?\s*$)"
 )
+FINDING_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*-[0-9]+$")
 RECEIPT_RE = re.compile(
     r"(?ms)^```agent-review[ \t]*\r?\n(.*?)^```[ \t]*\r?$"
 )
@@ -94,6 +96,12 @@ def nonempty(value: object) -> bool:
         isinstance(value, str)
         and bool(value.strip())
         and not PLACEHOLDER_RE.search(value)
+    )
+
+
+def valid_finding_id(value: object) -> bool:
+    return isinstance(value, str) and nonempty(value) and bool(
+        FINDING_ID_RE.fullmatch(value)
     )
 
 
@@ -227,8 +235,8 @@ def main() -> None:
         if not isinstance(finding, dict):
             fail("each finding must be a JSON object")
         finding_id = finding.get("id")
-        if not nonempty(finding_id) or finding_id in finding_ids:
-            fail("finding IDs must be present and unique")
+        if not valid_finding_id(finding_id) or finding_id in finding_ids:
+            fail("finding IDs must be unique and use a numbered prefix format such as SYS-1")
         finding_ids.add(finding_id)
         severity = finding.get("severity")
         if not isinstance(severity, str) or severity not in {"blocker", "major", "minor", "note"}:
@@ -243,7 +251,7 @@ def main() -> None:
             if str(closure.get("commit", "")).lower() != head_sha:
                 fail(f"blocker {finding_id} closure must bind to the final head SHA")
             if not nonempty(closure.get("quote")) or not nonempty(closure.get("evidence")):
-                fail(f"blocker {finding_id} needs a quote-verified closure and evidence")
+                fail(f"blocker {finding_id} needs a closure quote and evidence for manual review")
 
     paths = changed_paths(base_sha, head_sha)
     full_board = receipt.get("full_board")

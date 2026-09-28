@@ -32,12 +32,28 @@ class ReceiptValidationHelpersTest(unittest.TestCase):
             "WHY THIS SEAT IS NOT RELEVANT",
             "TODO: explain the evidence",
             "placeholder summary",
+            "N/A",
+            "NA",
+            "Not applicable.",
         ):
             with self.subTest(value=value):
                 self.assertFalse(validator.nonempty(value))
 
     def test_nonempty_accepts_completed_values(self) -> None:
         self.assertTrue(validator.nonempty("Reviewed the exact PR commit."))
+        self.assertTrue(
+            validator.nonempty(
+                "Not applicable because this governance change alters no runtime behavior."
+            )
+        )
+
+    def test_finding_ids_are_numbered_and_stable(self) -> None:
+        for value in ("SYS-1", "security-review-2"):
+            with self.subTest(value=value):
+                self.assertTrue(validator.valid_finding_id(value))
+        for value in ("SYS", "SYS-one", "1", "TODO-1"):
+            with self.subTest(value=value):
+                self.assertFalse(validator.valid_finding_id(value))
 
 
 if __name__ == "__main__":

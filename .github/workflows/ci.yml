@@ -39,6 +39,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
       - name: Require a linked GitHub issue
         if: >-
           github.event_name == 'pull_request' &&
@@ -49,21 +52,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          ISSUE_REFERENCE_PATTERN='^[[:space:]]*([*-][[:space:]]*)?(closes|fixes|resolves|references)[[:space:]]+#[0-9]+([^0-9]|$)'
-          TEMPLATE_ISSUE_REFERENCE_PATTERN='(^|[^[:alnum:]_])(closes|fixes|resolves|references)[[:space:]]+#[0-9]+([^0-9]|$)'
-          if grep -Eiq "$TEMPLATE_ISSUE_REFERENCE_PATTERN" .github/PULL_REQUEST_TEMPLATE.md; then
-            echo 'The pull request template must not contain a number-shaped example issue reference.' >&2
+          if ! issue_numbers=$(python3 -B .github/scripts/validate_issue_references.py); then
             exit 1
           fi
-          issue_body=$(printf '%s' "$PR_BODY" | awk '
-            /^[[:space:]]*```/ || /^[[:space:]]*~~~/ { fenced = !fenced; next }
-            !fenced { print }
-          ')
-          if ! printf '%s' "$issue_body" | grep -Eiq "$ISSUE_REFERENCE_PATTERN"; then
-            echo 'Every human-authored pull request must include Closes, Fixes, Resolves, or References #N.' >&2
-            exit 1
-          fi
-          issue_numbers=$(printf '%s' "$issue_body" | grep -Eio "$ISSUE_REFERENCE_PATTERN" | grep -Eo '#[0-9]+' | tr -d '#' | sort -u)
           for issue_number in $issue_numbers; do
             if ! issue_kind=$(gh api "repos/$GITHUB_REPOSITORY/issues/$issue_number" --jq 'if has("pull_request") then "pull_request" else "issue" end'); then
               echo "Referenced GitHub issue #$issue_number does not exist in this repository." >&2
@@ -78,9 +69,6 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: '3.12'
       - run: rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
       - run: npm ci --ignore-scripts
       - run: npm run check
