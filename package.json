@@ -12,16 +12,19 @@
     "apps/*"
   ],
   "scripts": {
-    "generate": "node scripts/generate-protocol.mjs",
-    "check:generated": "node scripts/generate-protocol.mjs --check",
+    "generate": "node scripts/generate.mjs",
+    "generate:status": "node scripts/generate-status.mjs",
+    "generate:protocol": "node scripts/generate-protocol.mjs && node scripts/generate-typescript-types.mjs",
+    "check:generated": "node scripts/generate.mjs --check",
     "typecheck": "tsc -b",
     "build": "tsc -b && npm run build --workspace @runweft/inspector",
-    "test": "tsc -b && node --test tests/scaffold.test.mjs",
+    "test": "tsc -b && node --test tests/scaffold.test.mjs tests/protocol.test.mjs",
     "dev": "npm run dev --workspace @runweft/inspector",
     "check": "node scripts/check.mjs"
   },
   "devDependencies": {
-    "typescript": "7.0.2",
-    "@types/node": "24.19.0"
+    "@types/node": "24.19.0",
+    "quicktype-core": "26.0.0",
+    "typescript": "7.0.2"
   }
 }

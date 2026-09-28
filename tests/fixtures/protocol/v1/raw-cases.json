@@ -1,0 +1,754 @@
+{
+  "schema_version": 1,
+  "description": "Raw-wire boundary fixtures. Literal cases store exact UTF-8 wire text; the 1 MiB cases use an explicit UTF-8 prefix plus repeated single-byte ASCII space descriptor. Every case pins the constructed byte count and SHA-256 before validation.",
+  "cases": [
+    {
+      "id": "raw-duplicate-protocol-key",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"}}",
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      },
+      "expected_byte_length": 403,
+      "expected_sha256": "ad666400f3c36241b2439c419b304c742b54707c71b09a5270ea99ee98b4810d"
+    },
+    {
+      "id": "raw-size-exactly-1mib",
+      "kind": "constructed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": {
+        "encoding": "utf8-prefix-plus-repeated-ascii-byte",
+        "prefix": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"}}",
+        "repeat_byte": " ",
+        "repeat_count": 1048198
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          }
+        }
+      },
+      "expected_byte_length": 1048576,
+      "expected_sha256": "a80097f360ba4821390c06d5758448c1bb002b5cff6004d3f46313e131129b65"
+    },
+    {
+      "id": "raw-size-over-1mib",
+      "kind": "constructed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": {
+        "encoding": "utf8-prefix-plus-repeated-ascii-byte",
+        "prefix": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"}}",
+        "repeat_byte": " ",
+        "repeat_count": 1048199
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "resource_exhausted"
+      },
+      "expected_byte_length": 1048577,
+      "expected_sha256": "bab15e6bb71df28077626777d3dc36ca6de8e28391088f2ecab8e6cdeb9bb95b",
+      "input_bytes": true
+    },
+    {
+      "id": "raw-depth-32-containers",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.depth\":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[null]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}}",
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          },
+          "extensions": {
+            "runweft.test.depth": [
+              [
+                [
+                  [
+                    [
+                      [
+                        [
+                          [
+                            [
+                              [
+                                [
+                                  [
+                                    [
+                                      [
+                                        [
+                                          [
+                                            [
+                                              [
+                                                [
+                                                  [
+                                                    [
+                                                      [
+                                                        [
+                                                          [
+                                                            [
+                                                              [
+                                                                [
+                                                                  [
+                                                                    [
+                                                                      [
+                                                                        null
+                                                                      ]
+                                                                    ]
+                                                                  ]
+                                                                ]
+                                                              ]
+                                                            ]
+                                                          ]
+                                                        ]
+                                                      ]
+                                                    ]
+                                                  ]
+                                                ]
+                                              ]
+                                            ]
+                                          ]
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          }
+        }
+      },
+      "expected_byte_length": 479,
+      "expected_sha256": "1df8f99247788063fc1dd5f147110673dcaf0db890cf66e4236b00f166e79753",
+      "expected_container_depth": 32
+    },
+    {
+      "id": "raw-depth-33-containers",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.depth\":[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[null]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]}}",
+      "expected": {
+        "status": "rejected",
+        "code": "resource_exhausted"
+      },
+      "expected_byte_length": 481,
+      "expected_sha256": "ed5cf8338fcc3c6f403e12853e9de50186c0a9e00be008aead472cdbae370e94",
+      "expected_container_depth": 33
+    },
+    {
+      "id": "raw-extension-value-4096-utf8-bytes",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.value\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}}",
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          },
+          "extensions": {
+            "runweft.test.value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          }
+        }
+      },
+      "expected_byte_length": 4513,
+      "expected_sha256": "ec2fa601ede7ee807f9f8a918c3d71a20dd9face2000073e489232aa136c4045",
+      "expected_extension_value_bytes": 4096
+    },
+    {
+      "id": "raw-extension-value-4097-utf8-bytes",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.value\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}}",
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      },
+      "expected_byte_length": 4514,
+      "expected_sha256": "5ddfc9ed0dac52e51784dfe4e58269a4e737d50bbc41c961e04b956837449eb9",
+      "expected_extension_value_bytes": 4097
+    },
+    {
+      "id": "raw-extension-key-128-utf8-bytes",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.map\":{\"\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\":\"v\"}}}",
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          },
+          "extensions": {
+            "runweft.test.map": {
+              "\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9": "v"
+            }
+          }
+        }
+      },
+      "expected_byte_length": 549,
+      "expected_sha256": "9c2f928ab2c7112b933644fd04a7f91cc31090c15a89504e23cc971ecc6a3260",
+      "expected_nested_key_utf8_bytes": 128
+    },
+    {
+      "id": "raw-extension-key-129-utf8-bytes",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.map\":{\"\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9\u00e9x\":\"v\"}}}",
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      },
+      "expected_byte_length": 550,
+      "expected_sha256": "e617e648a2a97bb5433046ca2cba19ee032f86187202f9c0bd84357c210442a6",
+      "expected_nested_key_utf8_bytes": 129
+    },
+    {
+      "id": "raw-extension-top-level-properties-32",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.key-00\":\"v\",\"runweft.test.key-01\":\"v\",\"runweft.test.key-02\":\"v\",\"runweft.test.key-03\":\"v\",\"runweft.test.key-04\":\"v\",\"runweft.test.key-05\":\"v\",\"runweft.test.key-06\":\"v\",\"runweft.test.key-07\":\"v\",\"runweft.test.key-08\":\"v\",\"runweft.test.key-09\":\"v\",\"runweft.test.key-10\":\"v\",\"runweft.test.key-11\":\"v\",\"runweft.test.key-12\":\"v\",\"runweft.test.key-13\":\"v\",\"runweft.test.key-14\":\"v\",\"runweft.test.key-15\":\"v\",\"runweft.test.key-16\":\"v\",\"runweft.test.key-17\":\"v\",\"runweft.test.key-18\":\"v\",\"runweft.test.key-19\":\"v\",\"runweft.test.key-20\":\"v\",\"runweft.test.key-21\":\"v\",\"runweft.test.key-22\":\"v\",\"runweft.test.key-23\":\"v\",\"runweft.test.key-24\":\"v\",\"runweft.test.key-25\":\"v\",\"runweft.test.key-26\":\"v\",\"runweft.test.key-27\":\"v\",\"runweft.test.key-28\":\"v\",\"runweft.test.key-29\":\"v\",\"runweft.test.key-30\":\"v\",\"runweft.test.key-31\":\"v\"}}",
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          },
+          "extensions": {
+            "runweft.test.key-00": "v",
+            "runweft.test.key-01": "v",
+            "runweft.test.key-02": "v",
+            "runweft.test.key-03": "v",
+            "runweft.test.key-04": "v",
+            "runweft.test.key-05": "v",
+            "runweft.test.key-06": "v",
+            "runweft.test.key-07": "v",
+            "runweft.test.key-08": "v",
+            "runweft.test.key-09": "v",
+            "runweft.test.key-10": "v",
+            "runweft.test.key-11": "v",
+            "runweft.test.key-12": "v",
+            "runweft.test.key-13": "v",
+            "runweft.test.key-14": "v",
+            "runweft.test.key-15": "v",
+            "runweft.test.key-16": "v",
+            "runweft.test.key-17": "v",
+            "runweft.test.key-18": "v",
+            "runweft.test.key-19": "v",
+            "runweft.test.key-20": "v",
+            "runweft.test.key-21": "v",
+            "runweft.test.key-22": "v",
+            "runweft.test.key-23": "v",
+            "runweft.test.key-24": "v",
+            "runweft.test.key-25": "v",
+            "runweft.test.key-26": "v",
+            "runweft.test.key-27": "v",
+            "runweft.test.key-28": "v",
+            "runweft.test.key-29": "v",
+            "runweft.test.key-30": "v",
+            "runweft.test.key-31": "v"
+          }
+        }
+      },
+      "expected_byte_length": 1225,
+      "expected_sha256": "e31fde59df0fd9cfc5abb836343ee2dfb5bbbe1b363d3b4d689f5d1685d13d5e",
+      "property_level": "top-level",
+      "expected_property_count": 32
+    },
+    {
+      "id": "raw-extension-top-level-properties-33",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.key-00\":\"v\",\"runweft.test.key-01\":\"v\",\"runweft.test.key-02\":\"v\",\"runweft.test.key-03\":\"v\",\"runweft.test.key-04\":\"v\",\"runweft.test.key-05\":\"v\",\"runweft.test.key-06\":\"v\",\"runweft.test.key-07\":\"v\",\"runweft.test.key-08\":\"v\",\"runweft.test.key-09\":\"v\",\"runweft.test.key-10\":\"v\",\"runweft.test.key-11\":\"v\",\"runweft.test.key-12\":\"v\",\"runweft.test.key-13\":\"v\",\"runweft.test.key-14\":\"v\",\"runweft.test.key-15\":\"v\",\"runweft.test.key-16\":\"v\",\"runweft.test.key-17\":\"v\",\"runweft.test.key-18\":\"v\",\"runweft.test.key-19\":\"v\",\"runweft.test.key-20\":\"v\",\"runweft.test.key-21\":\"v\",\"runweft.test.key-22\":\"v\",\"runweft.test.key-23\":\"v\",\"runweft.test.key-24\":\"v\",\"runweft.test.key-25\":\"v\",\"runweft.test.key-26\":\"v\",\"runweft.test.key-27\":\"v\",\"runweft.test.key-28\":\"v\",\"runweft.test.key-29\":\"v\",\"runweft.test.key-30\":\"v\",\"runweft.test.key-31\":\"v\",\"runweft.test.key-32\":\"v\"}}",
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      },
+      "expected_byte_length": 1251,
+      "expected_sha256": "b6e7ad87d091c6da6226264d139eb187f68b6dc8dff725faa610b18565886666",
+      "property_level": "top-level",
+      "expected_property_count": 33
+    },
+    {
+      "id": "raw-extension-nested-properties-32",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.map\":{\"key00\":\"v\",\"key01\":\"v\",\"key02\":\"v\",\"key03\":\"v\",\"key04\":\"v\",\"key05\":\"v\",\"key06\":\"v\",\"key07\":\"v\",\"key08\":\"v\",\"key09\":\"v\",\"key10\":\"v\",\"key11\":\"v\",\"key12\":\"v\",\"key13\":\"v\",\"key14\":\"v\",\"key15\":\"v\",\"key16\":\"v\",\"key17\":\"v\",\"key18\":\"v\",\"key19\":\"v\",\"key20\":\"v\",\"key21\":\"v\",\"key22\":\"v\",\"key23\":\"v\",\"key24\":\"v\",\"key25\":\"v\",\"key26\":\"v\",\"key27\":\"v\",\"key28\":\"v\",\"key29\":\"v\",\"key30\":\"v\",\"key31\":\"v\"}}}",
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          },
+          "extensions": {
+            "runweft.test.map": {
+              "key00": "v",
+              "key01": "v",
+              "key02": "v",
+              "key03": "v",
+              "key04": "v",
+              "key05": "v",
+              "key06": "v",
+              "key07": "v",
+              "key08": "v",
+              "key09": "v",
+              "key10": "v",
+              "key11": "v",
+              "key12": "v",
+              "key13": "v",
+              "key14": "v",
+              "key15": "v",
+              "key16": "v",
+              "key17": "v",
+              "key18": "v",
+              "key19": "v",
+              "key20": "v",
+              "key21": "v",
+              "key22": "v",
+              "key23": "v",
+              "key24": "v",
+              "key25": "v",
+              "key26": "v",
+              "key27": "v",
+              "key28": "v",
+              "key29": "v",
+              "key30": "v",
+              "key31": "v"
+            }
+          }
+        }
+      },
+      "expected_byte_length": 798,
+      "expected_sha256": "42b1cb9f80bcd5e3071fa4b9749fb7129a3099634cafb5330f7fdb2502d7bea1",
+      "property_level": "nested",
+      "expected_property_count": 32
+    },
+    {
+      "id": "raw-extension-nested-properties-33",
+      "kind": "literal",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"runweft.test.map\":{\"key00\":\"v\",\"key01\":\"v\",\"key02\":\"v\",\"key03\":\"v\",\"key04\":\"v\",\"key05\":\"v\",\"key06\":\"v\",\"key07\":\"v\",\"key08\":\"v\",\"key09\":\"v\",\"key10\":\"v\",\"key11\":\"v\",\"key12\":\"v\",\"key13\":\"v\",\"key14\":\"v\",\"key15\":\"v\",\"key16\":\"v\",\"key17\":\"v\",\"key18\":\"v\",\"key19\":\"v\",\"key20\":\"v\",\"key21\":\"v\",\"key22\":\"v\",\"key23\":\"v\",\"key24\":\"v\",\"key25\":\"v\",\"key26\":\"v\",\"key27\":\"v\",\"key28\":\"v\",\"key29\":\"v\",\"key30\":\"v\",\"key31\":\"v\",\"key32\":\"v\"}}}",
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      },
+      "expected_byte_length": 810,
+      "expected_sha256": "ac3a6abd486f30b74541417f2a13a364d221fa07f6016d97f03d64e4c4ab30b5",
+      "property_level": "nested",
+      "expected_property_count": 33
+    },
+    {
+      "id": "utf8-leading-bom-is-malformed",
+      "kind": "literal",
+      "wire": "\ufeff{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"}}",
+      "input_bytes": true,
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "escaped-lone-surrogate-is-malformed",
+      "kind": "literal",
+      "wire": "{\"protocol_version\":\"1.0\",\"kind\":\"command\",\"variant\":\"run.submit\",\"command_id\":\"cmd-1\",\"profile_id\":\"profile-1\",\"project_id\":\"project-1\",\"profile_incarnation\":\"incarnation-1\",\"coordinator_generation\":\"7\",\"payload\":{\"run_id\":\"run-1\",\"graph_revision_id\":\"graph-1\",\"graph_digest\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requested_budget_micro_usd\":\"0\"},\"extensions\":{\"com.example.test\":{\"value\":\"\\ud800\"}}}",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const steps = [
-  ['node', ['scripts/generate-protocol.mjs', '--check']],
+  ['node', ['scripts/generate.mjs', '--check']],
   ['cargo', ['fmt', '--all', '--check']],
   ['cargo', ['clippy', '--locked', '--workspace', '--all-targets', '--', '-D', 'warnings']],
   ['cargo', ['test', '--locked', '--workspace']],

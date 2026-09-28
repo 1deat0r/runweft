@@ -1,0 +1,762 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://runweft.invalid/schemas/protocol/v1",
+  "title": "ProtocolMessage",
+  "description": "Runweft version 1.0 command, event, response, and error wire contracts.",
+  "oneOf": [
+    { "$ref": "#/$defs/CommandMessage" },
+    { "$ref": "#/$defs/EventMessage" },
+    { "$ref": "#/$defs/ResponseMessage" },
+    { "$ref": "#/$defs/ErrorMessage" }
+  ],
+  "$defs": {
+    "Identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "Digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "Unsigned64": {
+      "description": "Canonical decimal string in the unsigned 64-bit range.",
+      "type": "string",
+      "maxLength": 20,
+      "pattern": "^(0|[1-9][0-9]{0,19})$"
+    },
+    "PositiveUnsigned64": {
+      "description": "Canonical positive decimal string in the unsigned 64-bit range.",
+      "type": "string",
+      "maxLength": 20,
+      "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "MicroUsd": {
+      "description": "Canonical non-negative integer micro-USD in the unsigned 128-bit range.",
+      "type": "string",
+      "maxLength": 39,
+      "pattern": "^(0|[1-9][0-9]{0,38})$"
+    },
+    "ObservedAt": {
+      "description": "RFC 3339 date-time with an explicit UTC offset.",
+      "type": "string",
+      "maxLength": 35,
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "Extensions": {
+      "description": "Namespaced optional data in the cross-language-safe extension subset.",
+      "type": "object",
+      "maxProperties": 32,
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)+$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/ExtensionValue" }
+    },
+    "ExtensionValue": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "string" },
+        { "type": "array", "items": { "$ref": "#/$defs/ExtensionValue" } },
+        {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": { "$ref": "#/$defs/ExtensionValue" }
+        }
+      ]
+    },
+    "Actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["user", "coordinator", "worker", "reconciler"] },
+        "id": { "$ref": "#/$defs/Identifier" }
+      }
+    },
+    "LeaseBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id", "project_id", "run_id", "task_id", "attempt_id", "lease_id", "profile_incarnation", "coordinator_generation", "epoch"],
+      "properties": {
+        "profile_id": { "$ref": "#/$defs/Identifier" },
+        "project_id": { "$ref": "#/$defs/Identifier" },
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "lease_id": { "$ref": "#/$defs/Identifier" },
+        "profile_incarnation": { "$ref": "#/$defs/Identifier" },
+        "coordinator_generation": { "$ref": "#/$defs/PositiveUnsigned64" },
+        "epoch": { "$ref": "#/$defs/PositiveUnsigned64" }
+      }
+    },
+    "ErrorCode": {
+      "type": "string",
+      "enum": [
+        "unsupported_version",
+        "unknown_critical_variant",
+        "malformed_payload",
+        "unknown_field",
+        "stale_profile_incarnation",
+        "stale_coordinator_generation",
+        "stale_lease",
+        "invalid_state_transition",
+        "conflict",
+        "not_found",
+        "unauthorized",
+        "resource_exhausted",
+        "requires_confirmation",
+        "unknown_effect",
+        "internal"
+      ]
+    },
+    "ErrorBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code"],
+      "properties": {
+        "code": { "$ref": "#/$defs/ErrorCode" }
+      }
+    },
+    "RunState": {
+      "type": "string",
+      "enum": ["admitted", "running", "awaiting_approval", "paused", "succeeded", "failed", "cancelled", "unknown_effect"]
+    },
+    "GraphRevisionState": {
+      "type": "string",
+      "enum": ["draft", "validated", "admitted", "rejected", "superseded"]
+    },
+    "TaskState": {
+      "type": "string",
+      "enum": ["queued", "ready", "running", "verifying", "awaiting_approval", "paused", "succeeded", "failed", "cancelled", "unknown_effect", "skipped"]
+    },
+    "AttemptState": {
+      "type": "string",
+      "enum": ["created", "dispatched", "running", "awaiting_approval", "paused", "verifying", "succeeded", "failed", "cancelled", "unknown_effect", "reconciled"]
+    },
+    "EffectState": {
+      "type": "string",
+      "enum": ["recorded", "authorized", "invoking", "applied", "failed", "cancelled", "unknown_effect", "reconciled_applied", "reconciled_not_applied"]
+    },
+    "RunSubmitPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "graph_revision_id", "graph_digest", "requested_budget_micro_usd"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "graph_revision_id": { "$ref": "#/$defs/Identifier" },
+        "graph_digest": { "$ref": "#/$defs/Digest" },
+        "requested_budget_micro_usd": { "$ref": "#/$defs/MicroUsd" }
+      }
+    },
+    "RunIdPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "reason": {
+          "type": "string",
+          "enum": ["user_request", "policy_change", "operator_action"]
+        }
+      }
+    },
+    "EffectApprovalPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "effect_intent_id", "action_id", "target_id", "artifact_digest", "action_digest", "grant_revision_id", "policy_revision_id"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "effect_intent_id": { "$ref": "#/$defs/Identifier" },
+        "action_id": { "$ref": "#/$defs/Identifier" },
+        "target_id": { "$ref": "#/$defs/Identifier" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" },
+        "action_digest": { "$ref": "#/$defs/Digest" },
+        "grant_revision_id": { "$ref": "#/$defs/Identifier" },
+        "policy_revision_id": { "$ref": "#/$defs/Identifier" }
+      }
+    },
+    "AttemptResultSubmittedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "task_id", "attempt_id", "lease", "artifact_digest"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "lease": { "$ref": "#/$defs/LeaseBinding" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" }
+      }
+    },
+    "EffectIntentRecordedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "task_id", "attempt_id", "lease", "effect_intent_id", "action_id", "target_id", "artifact_digest", "action_digest", "grant_revision_id", "policy_revision_id", "effect_class"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "lease": { "$ref": "#/$defs/LeaseBinding" },
+        "effect_intent_id": { "$ref": "#/$defs/Identifier" },
+        "action_id": { "$ref": "#/$defs/Identifier" },
+        "target_id": { "$ref": "#/$defs/Identifier" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" },
+        "action_digest": { "$ref": "#/$defs/Digest" },
+        "grant_revision_id": { "$ref": "#/$defs/Identifier" },
+        "policy_revision_id": { "$ref": "#/$defs/Identifier" },
+        "effect_class": { "type": "string", "enum": ["read_only", "remote_idempotent", "externally_reconcilable", "opaque_non_idempotent"] }
+      }
+    },
+    "EffectReconciliationProposalPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "effect_intent_id", "evidence_source_id", "evidence_digest", "claimed_outcome"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "effect_intent_id": { "$ref": "#/$defs/Identifier" },
+        "evidence_source_id": { "$ref": "#/$defs/Identifier" },
+        "evidence_digest": { "$ref": "#/$defs/Digest" },
+        "claimed_outcome": { "type": "string", "enum": ["applied", "not_applied", "unresolved"] }
+      }
+    },
+    "EffectReconciledPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "effect_intent_id", "from_state", "to_state", "action_digest", "target_id", "artifact_digest", "lease", "evidence_source_id", "evidence_digest", "outcome"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "effect_intent_id": { "$ref": "#/$defs/Identifier" },
+        "from_state": { "const": "unknown_effect" },
+        "to_state": { "type": "string", "enum": ["reconciled_applied", "reconciled_not_applied"] },
+        "action_digest": { "$ref": "#/$defs/Digest" },
+        "target_id": { "$ref": "#/$defs/Identifier" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" },
+        "lease": { "$ref": "#/$defs/LeaseBinding" },
+        "evidence_source_id": { "$ref": "#/$defs/Identifier" },
+        "evidence_digest": { "$ref": "#/$defs/Digest" },
+        "outcome": { "type": "string", "enum": ["applied", "not_applied"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "outcome": { "const": "applied" } }, "required": ["outcome"] },
+          "then": { "properties": { "to_state": { "const": "reconciled_applied" } } }
+        },
+        {
+          "if": { "properties": { "outcome": { "const": "not_applied" } }, "required": ["outcome"] },
+          "then": { "properties": { "to_state": { "const": "reconciled_not_applied" } } }
+        }
+      ]
+    },
+    "RunSubmitCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "run.submit" },
+            "payload": { "$ref": "#/$defs/RunSubmitPayload" }
+          }
+        }
+      ]
+    },
+    "RunPauseCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "run.pause" },
+            "payload": { "$ref": "#/$defs/RunIdPayload" }
+          }
+        }
+      ]
+    },
+    "RunResumeCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "run.resume" },
+            "payload": { "$ref": "#/$defs/RunIdPayload" }
+          }
+        }
+      ]
+    },
+    "RunCancelCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "run.cancel" },
+            "payload": { "$ref": "#/$defs/RunIdPayload" }
+          }
+        }
+      ]
+    },
+    "EffectApproveCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "effect.approve" },
+            "payload": { "$ref": "#/$defs/EffectApprovalPayload" }
+          }
+        }
+      ]
+    },
+    "EffectReconcileCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "effect.reconciliation.propose" },
+            "payload": { "$ref": "#/$defs/EffectReconciliationProposalPayload" }
+          }
+        }
+      ]
+    },
+    "AttemptResultSubmitCommand": {
+      "allOf": [
+        { "$ref": "#/$defs/CommandBase" },
+        {
+          "properties": {
+            "variant": { "const": "attempt.result.submit" },
+            "payload": { "$ref": "#/$defs/AttemptResultSubmittedPayload" }
+          }
+        }
+      ]
+    },
+    "CommandMessage": {
+      "oneOf": [
+        { "$ref": "#/$defs/RunSubmitCommand" },
+        { "$ref": "#/$defs/RunPauseCommand" },
+        { "$ref": "#/$defs/RunResumeCommand" },
+        { "$ref": "#/$defs/RunCancelCommand" },
+        { "$ref": "#/$defs/EffectApproveCommand" },
+        { "$ref": "#/$defs/EffectReconcileCommand" },
+        { "$ref": "#/$defs/AttemptResultSubmitCommand" }
+      ]
+    },
+    "CommandBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "kind",
+        "variant",
+        "command_id",
+        "profile_id",
+        "project_id",
+        "profile_incarnation",
+        "coordinator_generation",
+        "payload"
+      ],
+      "properties": {
+        "protocol_version": { "const": "1.0" },
+        "kind": { "const": "command" },
+        "variant": { "type": "string" },
+        "command_id": { "$ref": "#/$defs/Identifier" },
+        "profile_id": { "$ref": "#/$defs/Identifier" },
+        "project_id": { "$ref": "#/$defs/Identifier" },
+        "profile_incarnation": { "$ref": "#/$defs/Identifier" },
+        "coordinator_generation": { "$ref": "#/$defs/PositiveUnsigned64" },
+        "payload": { "type": "object" },
+        "extensions": { "$ref": "#/$defs/Extensions" }
+      }
+    },
+    "RunAdmittedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "graph_revision_id", "graph_digest"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "graph_revision_id": { "$ref": "#/$defs/Identifier" },
+        "graph_digest": { "$ref": "#/$defs/Digest" }
+      }
+    },
+    "RunStateChangedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "from_state", "to_state"],
+      "properties": {
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "from_state": { "$ref": "#/$defs/RunState" },
+        "to_state": { "$ref": "#/$defs/RunState" }
+      }
+    },
+    "GraphRevisionStateChangedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["graph_revision_id", "from_state", "to_state", "graph_digest"],
+      "properties": {
+        "graph_revision_id": { "$ref": "#/$defs/Identifier" },
+        "from_state": { "$ref": "#/$defs/GraphRevisionState" },
+        "to_state": { "$ref": "#/$defs/GraphRevisionState" },
+        "graph_digest": { "$ref": "#/$defs/Digest" }
+      }
+    },
+    "TaskStateChangedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "from_state", "to_state"],
+      "properties": {
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "from_state": { "$ref": "#/$defs/TaskState" },
+        "to_state": { "$ref": "#/$defs/TaskState" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "verification_receipt_id": { "$ref": "#/$defs/Identifier" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "from_state": { "const": "running" }, "to_state": { "const": "verifying" } }, "required": ["from_state", "to_state"] },
+          "then": { "required": ["attempt_id"] }
+        },
+        {
+          "if": { "properties": { "from_state": { "const": "verifying" }, "to_state": { "const": "succeeded" } }, "required": ["from_state", "to_state"] },
+          "then": { "required": ["attempt_id", "verification_receipt_id"] }
+        }
+      ]
+    },
+    "AcceptedAttemptResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result_id", "run_id", "task_id", "attempt_id", "lease", "artifact_digest"],
+      "properties": {
+        "result_id": { "$ref": "#/$defs/Identifier" },
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "lease": { "$ref": "#/$defs/LeaseBinding" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" }
+      }
+    },
+    "VerificationReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receipt_id", "run_id", "task_id", "attempt_id", "artifact_digest", "verifier_id", "evidence_digest", "observed_at"],
+      "properties": {
+        "receipt_id": { "$ref": "#/$defs/Identifier" },
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" },
+        "verifier_id": { "$ref": "#/$defs/Identifier" },
+        "evidence_digest": { "$ref": "#/$defs/Digest" },
+        "observed_at": { "$ref": "#/$defs/ObservedAt" }
+      }
+    },
+    "AttemptStateChangedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "attempt_id", "from_state", "to_state"],
+      "properties": {
+        "task_id": { "$ref": "#/$defs/Identifier" },
+        "attempt_id": { "$ref": "#/$defs/Identifier" },
+        "from_state": { "$ref": "#/$defs/AttemptState" },
+        "to_state": { "$ref": "#/$defs/AttemptState" },
+        "lease_epoch": { "$ref": "#/$defs/PositiveUnsigned64" },
+        "accepted_result": { "$ref": "#/$defs/AcceptedAttemptResult" },
+        "verification_receipt": { "$ref": "#/$defs/VerificationReceipt" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "from_state": { "const": "running" }, "to_state": { "const": "verifying" } }, "required": ["from_state", "to_state"] },
+          "then": { "required": ["accepted_result"] }
+        },
+        {
+          "if": { "properties": { "from_state": { "const": "verifying" }, "to_state": { "const": "succeeded" } }, "required": ["from_state", "to_state"] },
+          "then": { "required": ["verification_receipt"] }
+        }
+      ]
+    },
+    "EffectStateChangedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effect_intent_id", "from_state", "to_state"],
+      "properties": {
+        "effect_intent_id": { "$ref": "#/$defs/Identifier" },
+        "from_state": { "$ref": "#/$defs/EffectState" },
+        "to_state": { "$ref": "#/$defs/EffectState" },
+        "receipt": { "$ref": "#/$defs/EffectReceipt" },
+        "not_applied_evidence": { "$ref": "#/$defs/EvidenceReference" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "from_state": { "const": "invoking" }, "to_state": { "const": "applied" } }, "required": ["from_state", "to_state"] },
+          "then": { "required": ["receipt"] }
+        },
+        {
+          "if": { "properties": { "from_state": { "const": "invoking" }, "to_state": { "const": "failed" } }, "required": ["from_state", "to_state"] },
+          "then": { "required": ["not_applied_evidence"] }
+        }
+      ]
+    },
+    "EvidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "digest"],
+      "properties": {
+        "source_id": { "$ref": "#/$defs/Identifier" },
+        "digest": { "$ref": "#/$defs/Digest" }
+      }
+    },
+    "EffectReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["receipt_id", "effect_intent_id", "action_digest", "target_id", "artifact_digest", "lease", "evidence_source_id", "evidence_digest", "observed_at"],
+      "properties": {
+        "receipt_id": { "$ref": "#/$defs/Identifier" },
+        "effect_intent_id": { "$ref": "#/$defs/Identifier" },
+        "action_digest": { "$ref": "#/$defs/Digest" },
+        "target_id": { "$ref": "#/$defs/Identifier" },
+        "artifact_digest": { "$ref": "#/$defs/Digest" },
+        "lease": { "$ref": "#/$defs/LeaseBinding" },
+        "evidence_source_id": { "$ref": "#/$defs/Identifier" },
+        "evidence_digest": { "$ref": "#/$defs/Digest" },
+        "observed_at": { "$ref": "#/$defs/ObservedAt" }
+      }
+    },
+    "RunAdmittedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "run.admitted" },
+            "payload": { "$ref": "#/$defs/RunAdmittedPayload" }
+          }
+        }
+      ]
+    },
+    "RunStateChangedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "run.state.changed" },
+            "payload": { "$ref": "#/$defs/RunStateChangedPayload" }
+          }
+        }
+      ]
+    },
+    "GraphRevisionStateChangedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "graph.revision.state.changed" },
+            "payload": { "$ref": "#/$defs/GraphRevisionStateChangedPayload" }
+          }
+        }
+      ]
+    },
+    "TaskStateChangedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "task.state.changed" },
+            "payload": { "$ref": "#/$defs/TaskStateChangedPayload" }
+          }
+        }
+      ]
+    },
+    "AttemptStateChangedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "attempt.state.changed" },
+            "payload": { "$ref": "#/$defs/AttemptStateChangedPayload" }
+          }
+        }
+      ]
+    },
+    "EffectIntentRecordedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "effect.intent.recorded" },
+            "payload": { "$ref": "#/$defs/EffectIntentRecordedPayload" }
+          }
+        }
+      ]
+    },
+    "EffectReconciledEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "effect.reconciled" },
+            "payload": { "$ref": "#/$defs/EffectReconciledPayload" }
+          }
+        }
+      ]
+    },
+    "EffectStateChangedEvent": {
+      "allOf": [
+        { "$ref": "#/$defs/EventBase" },
+        {
+          "properties": {
+            "variant": { "const": "effect.state.changed" },
+            "payload": { "$ref": "#/$defs/EffectStateChangedPayload" }
+          }
+        }
+      ]
+    },
+    "EventMessage": {
+      "oneOf": [
+        { "$ref": "#/$defs/RunAdmittedEvent" },
+        { "$ref": "#/$defs/RunStateChangedEvent" },
+        { "$ref": "#/$defs/GraphRevisionStateChangedEvent" },
+        { "$ref": "#/$defs/TaskStateChangedEvent" },
+        { "$ref": "#/$defs/AttemptStateChangedEvent" },
+        { "$ref": "#/$defs/EffectIntentRecordedEvent" },
+        { "$ref": "#/$defs/EffectStateChangedEvent" },
+        { "$ref": "#/$defs/EffectReconciledEvent" }
+      ]
+    },
+    "EventBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "kind",
+        "variant",
+        "event_id",
+        "profile_id",
+        "project_id",
+        "profile_incarnation",
+        "coordinator_generation",
+        "run_id",
+        "sequence",
+        "causation_id",
+        "actor",
+        "graph_revision_id",
+        "policy_revision_id",
+        "observed_at",
+        "payload"
+      ],
+      "properties": {
+        "protocol_version": { "const": "1.0" },
+        "kind": { "const": "event" },
+        "variant": { "type": "string" },
+        "event_id": { "$ref": "#/$defs/Identifier" },
+        "profile_id": { "$ref": "#/$defs/Identifier" },
+        "project_id": { "$ref": "#/$defs/Identifier" },
+        "profile_incarnation": { "$ref": "#/$defs/Identifier" },
+        "coordinator_generation": { "$ref": "#/$defs/PositiveUnsigned64" },
+        "run_id": { "$ref": "#/$defs/Identifier" },
+        "sequence": { "$ref": "#/$defs/PositiveUnsigned64" },
+        "causation_id": { "$ref": "#/$defs/Identifier" },
+        "actor": { "$ref": "#/$defs/Actor" },
+        "graph_revision_id": { "$ref": "#/$defs/Identifier" },
+        "policy_revision_id": { "$ref": "#/$defs/Identifier" },
+        "observed_at": { "$ref": "#/$defs/ObservedAt" },
+        "payload": { "type": "object" },
+        "extensions": { "$ref": "#/$defs/Extensions" }
+      }
+    },
+    "AcceptedResponsePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command_id", "event_sequence"],
+      "properties": {
+        "command_id": { "$ref": "#/$defs/Identifier" },
+        "event_sequence": { "$ref": "#/$defs/PositiveUnsigned64" }
+      }
+    },
+    "RejectedResponsePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command_id", "error"],
+      "properties": {
+        "command_id": { "$ref": "#/$defs/Identifier" },
+        "error": { "$ref": "#/$defs/ErrorBody" }
+      }
+    },
+    "AcceptedResponse": {
+      "allOf": [
+        { "$ref": "#/$defs/ResponseBase" },
+        {
+          "properties": {
+            "variant": { "const": "command.accepted" },
+            "payload": { "$ref": "#/$defs/AcceptedResponsePayload" }
+          }
+        }
+      ]
+    },
+    "RejectedResponse": {
+      "allOf": [
+        { "$ref": "#/$defs/ResponseBase" },
+        {
+          "properties": {
+            "variant": { "const": "command.rejected" },
+            "payload": { "$ref": "#/$defs/RejectedResponsePayload" }
+          }
+        }
+      ]
+    },
+    "ResponseMessage": {
+      "oneOf": [
+        { "$ref": "#/$defs/AcceptedResponse" },
+        { "$ref": "#/$defs/RejectedResponse" }
+      ]
+    },
+    "ResponseBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_version",
+        "kind",
+        "variant",
+        "correlation_id",
+        "profile_id",
+        "project_id",
+        "profile_incarnation",
+        "coordinator_generation",
+        "payload"
+      ],
+      "properties": {
+        "protocol_version": { "const": "1.0" },
+        "kind": { "const": "response" },
+        "variant": { "type": "string" },
+        "correlation_id": { "$ref": "#/$defs/Identifier" },
+        "profile_id": { "$ref": "#/$defs/Identifier" },
+        "project_id": { "$ref": "#/$defs/Identifier" },
+        "profile_incarnation": { "$ref": "#/$defs/Identifier" },
+        "coordinator_generation": { "$ref": "#/$defs/PositiveUnsigned64" },
+        "payload": { "type": "object" },
+        "extensions": { "$ref": "#/$defs/Extensions" }
+      }
+    },
+    "ProtocolErrorMessage": {
+      "allOf": [
+        { "$ref": "#/$defs/ErrorBase" },
+        {
+          "properties": {
+            "variant": { "const": "protocol.error" },
+            "payload": { "$ref": "#/$defs/ErrorBody" }
+          }
+        }
+      ]
+    },
+    "ErrorMessage": {
+      "oneOf": [
+        { "$ref": "#/$defs/ProtocolErrorMessage" }
+      ]
+    },
+    "ErrorBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol_version", "kind", "variant", "correlation_id", "payload"],
+      "properties": {
+        "protocol_version": { "const": "1.0" },
+        "kind": { "const": "error" },
+        "variant": { "type": "string" },
+        "correlation_id": { "$ref": "#/$defs/Identifier" },
+        "payload": { "type": "object" }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "messages": {
+    "command": {
+      "run.submit": ["user"],
+      "run.pause": ["user"],
+      "run.resume": ["user"],
+      "run.cancel": ["user"],
+      "effect.approve": ["user"],
+      "attempt.result.submit": ["worker"],
+      "effect.reconciliation.propose": ["reconciler"]
+    },
+    "event": { "*": ["coordinator"] },
+    "response": { "*": ["coordinator"] },
+    "error": { "*": ["coordinator"] }
+  },
+  "lease_subject_match": {
+    "attempt.result.submit": "current_lease.assigned_peer_id"
+  }
+}

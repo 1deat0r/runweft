@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "retry": {
+    "unsupported_version": "never",
+    "unknown_critical_variant": "never",
+    "malformed_payload": "never",
+    "unknown_field": "never",
+    "stale_profile_incarnation": "never",
+    "stale_coordinator_generation": "refresh_then_replay_same_command_id",
+    "stale_lease": "never_without_new_lease",
+    "invalid_state_transition": "never_without_new_state",
+    "conflict": "never",
+    "not_found": "never_without_new_reference",
+    "unauthorized": "never_without_new_authority",
+    "resource_exhausted": "same_command_after_limit_window",
+    "requires_confirmation": "never_without_explicit_approval",
+    "unknown_effect": "never_replay_effect_intent",
+    "internal": "never_without_reconciled_command_outcome"
+  }
+}

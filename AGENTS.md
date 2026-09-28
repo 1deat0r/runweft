@@ -6,7 +6,7 @@ This repository is a scaffold. Do not claim the scheduler, database, broker, san
 
 `spec.md` and its named normative documents govern future product work. Historical research and earlier board approvals under `docs/research/` do not approve new changes. Follow the task's user-authorized scope. A board approval is not deployment or publishing permission.
 
-Use schema-first contracts. `schemas/runtime-status.schema.json` generates the two scaffold status bindings via `npm run generate`; do not hand-edit generated files. This narrow generator is not the future production schema compiler. Keep Rust free of unsafe code unless a reviewed design changes that rule. Adapters cannot become authority for durable state or permissions.
+Use schema-first contracts. `schemas/runtime-status.schema.json` generates the two scaffold status bindings; `schemas/run-protocol.schema.json` generates the v1 Rust/TypeScript protocol bindings, metadata, transition allow-list, and transition docs via `npm run generate`. Do not hand-edit generated files. These are wire contracts and validators, not a production schema compiler or runtime coordinator. Keep Rust free of unsafe code unless a reviewed design changes that rule. Adapters cannot become authority for durable state or permissions.
 
 ## Local-first development
 

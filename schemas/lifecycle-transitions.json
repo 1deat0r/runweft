@@ -1,0 +1,878 @@
+{
+  "schema_version": 1,
+  "description": "Coordinator-owned lifecycle transitions for protocol v1.0.",
+  "entities": [
+    {
+      "name": "Run",
+      "states": [
+        "admitted",
+        "running",
+        "awaiting_approval",
+        "paused",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "unknown_effect"
+      ],
+      "transitions": [
+        {
+          "from": "admitted",
+          "to": "running",
+          "guard": "graph_and_policy_revalidated",
+          "owner": "coordinator",
+          "retry": "same_run",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "awaiting_approval",
+          "guard": "material_effect_requires_user_decision_before_invocation",
+          "owner": "coordinator",
+          "retry": "resume_only_after_exact_approval",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "paused",
+          "guard": "pause_stops_new_admissions_and_tracks_inflight_effects",
+          "owner": "coordinator",
+          "retry": "resume_revalidates_current_authority",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "succeeded",
+          "guard": "all_required_outputs_have_accepted_receipts_and_no_unknown_effects",
+          "owner": "coordinator",
+          "retry": "terminal",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "guard": "failure_policy_exhausted_and_no_ambiguous_effects",
+          "owner": "coordinator",
+          "retry": "new_run_or_explicit_policy_retry",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "cancelled",
+          "guard": "cancel_prevents_new_admissions_and_no_effect_is_ambiguous",
+          "owner": "coordinator",
+          "retry": "terminal",
+          "reconciliation": "required_before_cancel_if_effect_is_ambiguous",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "unknown_effect",
+          "guard": "external_effect_outcome_cannot_be_established",
+          "owner": "coordinator",
+          "retry": "never_automatically",
+          "reconciliation": "required",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "awaiting_approval",
+          "to": "running",
+          "guard": "exact_action_approved_and_current_deny_rules_rechecked",
+          "owner": "user_and_coordinator",
+          "retry": "resume_same_run",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "awaiting_approval",
+          "to": "cancelled",
+          "guard": "user_denies_or_cancels_before_effect_invocation",
+          "owner": "user_and_coordinator",
+          "retry": "terminal",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "paused",
+          "to": "running",
+          "guard": "resume_revalidates_inputs_grants_and_leases",
+          "owner": "coordinator",
+          "retry": "resume_same_run",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "paused",
+          "to": "cancelled",
+          "guard": "cancel_prevents_new_admissions_and_ambiguous_effects_are_reconciled",
+          "owner": "coordinator",
+          "retry": "terminal",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "running",
+          "guard": "every_unknown_effect_reconciled_and_remaining_work_revalidated",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_if_reconciliation_proves_no_effect",
+          "reconciliation": "required",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "succeeded",
+          "guard": "reconciled_effects_and_all_required_outputs_have_accepted_receipts",
+          "owner": "coordinator",
+          "retry": "terminal",
+          "reconciliation": "required",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "failed",
+          "guard": "reconciled_outcome_satisfies_failure_policy",
+          "owner": "coordinator",
+          "retry": "new_run_or_explicit_policy_retry",
+          "reconciliation": "required",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "cancelled",
+          "guard": "all_ambiguous_effects_reconciled_before_cancellation",
+          "owner": "coordinator",
+          "retry": "terminal",
+          "reconciliation": "required",
+          "events": [
+            "run.state.changed"
+          ]
+        },
+        {
+          "from": "admitted",
+          "to": "cancelled",
+          "guard": "user_cancel_before_any_attempt_or_effect_exists",
+          "owner": "coordinator",
+          "retry": "terminal",
+          "reconciliation": "none",
+          "events": [
+            "run.state.changed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GraphRevision",
+      "states": [
+        "draft",
+        "validated",
+        "admitted",
+        "rejected",
+        "superseded"
+      ],
+      "transitions": [
+        {
+          "from": "draft",
+          "to": "validated",
+          "guard": "deterministic_compiler_accepts_graph_and_declared_contracts",
+          "owner": "coordinator",
+          "retry": "same_revision_until_admission",
+          "reconciliation": "none",
+          "events": [
+            "graph.revision.state.changed"
+          ]
+        },
+        {
+          "from": "draft",
+          "to": "rejected",
+          "guard": "deterministic_compiler_rejects_graph",
+          "owner": "coordinator",
+          "retry": "new_revision_required_for_changes",
+          "reconciliation": "none",
+          "events": [
+            "graph.revision.state.changed"
+          ]
+        },
+        {
+          "from": "validated",
+          "to": "admitted",
+          "guard": "coordinator_commits_scope_grants_budget_and_revision",
+          "owner": "coordinator",
+          "retry": "same_revision_only_if_not_admitted",
+          "reconciliation": "none",
+          "events": [
+            "graph.revision.state.changed"
+          ]
+        },
+        {
+          "from": "validated",
+          "to": "rejected",
+          "guard": "admission_precondition_no_longer_holds",
+          "owner": "coordinator",
+          "retry": "new_revision_required_for_changes",
+          "reconciliation": "none",
+          "events": [
+            "graph.revision.state.changed"
+          ]
+        },
+        {
+          "from": "admitted",
+          "to": "superseded",
+          "guard": "replacement_revision_is_admitted_without_rewriting_history",
+          "owner": "coordinator",
+          "retry": "new_revision",
+          "reconciliation": "none",
+          "events": [
+            "graph.revision.state.changed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Task",
+      "states": [
+        "queued",
+        "ready",
+        "running",
+        "verifying",
+        "awaiting_approval",
+        "paused",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "unknown_effect",
+        "skipped"
+      ],
+      "transitions": [
+        {
+          "from": "queued",
+          "to": "ready",
+          "guard": "dependencies_accepted_and_required_resources_and_grants_are_available",
+          "owner": "coordinator",
+          "retry": "same_task",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "queued",
+          "to": "skipped",
+          "guard": "completion_policy_allows_optional_skip_and_required_outputs_remain_explicit",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "ready",
+          "to": "running",
+          "guard": "attempt_created_and_current_fenced_lease_admitted",
+          "owner": "coordinator",
+          "retry": "new_attempt_on_retry",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "ready",
+          "to": "cancelled",
+          "guard": "cancel_prevents_dispatch",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "verifying",
+          "guard": "immutable_result_and_artifact_digest_recorded",
+          "owner": "coordinator",
+          "retry": "new_attempt_on_retry",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "awaiting_approval",
+          "guard": "material_effect_blocked_before_invocation",
+          "owner": "coordinator",
+          "retry": "resume_after_exact_approval",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "paused",
+          "guard": "pause_stops_new_dispatch_and_tracks_inflight_effects",
+          "owner": "coordinator",
+          "retry": "revalidate_before_resume",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "guard": "attempt_failed_and_no_effect_is_ambiguous",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_under_bounded_retry_policy",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "cancelled",
+          "guard": "cancel_stops_work_and_no_effect_is_ambiguous",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "unknown_effect",
+          "guard": "external_effect_outcome_is_ambiguous",
+          "owner": "coordinator",
+          "retry": "never_automatically",
+          "reconciliation": "required",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "verifying",
+          "to": "succeeded",
+          "guard": "unique_attempt_verification_receipt_accepts_exact_artifact_digest_and_task_event_links_same_attempt_and_receipt",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "verifying",
+          "to": "failed",
+          "guard": "independent_verification_rejects_artifact_or_policy_exhausted",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_under_bounded_retry_policy",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "verifying",
+          "to": "unknown_effect",
+          "guard": "verification_cannot_establish_external_effect_outcome",
+          "owner": "coordinator",
+          "retry": "never_automatically",
+          "reconciliation": "required",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "awaiting_approval",
+          "to": "running",
+          "guard": "exact_action_approved_and_current_authority_rechecked",
+          "owner": "user_and_coordinator",
+          "retry": "resume_same_attempt_only_if_still_live",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "awaiting_approval",
+          "to": "cancelled",
+          "guard": "user_denies_or_cancels_before_effect_invocation",
+          "owner": "user_and_coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "paused",
+          "to": "ready",
+          "guard": "dependencies_grants_and_inputs_revalidated_before_new_attempt",
+          "owner": "coordinator",
+          "retry": "new_attempt_if_prior_attempt_ended",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "paused",
+          "to": "cancelled",
+          "guard": "cancel_prevents_new_dispatch_and_ambiguous_effects_are_reconciled",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "failed",
+          "to": "ready",
+          "guard": "bounded_retry_policy_allows_new_attempt_and_inputs_remain_valid",
+          "owner": "coordinator",
+          "retry": "creates_new_attempt",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "succeeded",
+          "guard": "reconciliation_proves_effect_and_exact_output_is_accepted",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "required",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "failed",
+          "guard": "reconciliation_establishes_outcome_and_failure_policy",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_if_no_effect_and_policy_allows",
+          "reconciliation": "required",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "ready",
+          "guard": "reconciliation_proves_no_effect_and_retry_policy_allows_new_attempt",
+          "owner": "coordinator",
+          "retry": "creates_new_attempt",
+          "reconciliation": "required",
+          "events": [
+            "task.state.changed"
+          ]
+        },
+        {
+          "from": "queued",
+          "to": "cancelled",
+          "guard": "run_cancelled_before_task_dispatch",
+          "owner": "coordinator",
+          "retry": "terminal_for_revision",
+          "reconciliation": "none",
+          "events": [
+            "task.state.changed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attempt",
+      "states": [
+        "created",
+        "dispatched",
+        "running",
+        "awaiting_approval",
+        "paused",
+        "verifying",
+        "succeeded",
+        "failed",
+        "cancelled",
+        "unknown_effect",
+        "reconciled"
+      ],
+      "transitions": [
+        {
+          "from": "created",
+          "to": "dispatched",
+          "guard": "coordinator_records_current_fenced_lease_before_dispatch",
+          "owner": "coordinator",
+          "retry": "new_attempt_after_terminal_failure",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "created",
+          "to": "cancelled",
+          "guard": "cancel_prevents_dispatch_before_worker_or_effect_invocation",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_if_task_policy_allows",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "dispatched",
+          "to": "running",
+          "guard": "worker_acknowledges_matching_live_lease",
+          "owner": "coordinator",
+          "retry": "new_attempt_if_lease_expires_before_invocation",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "dispatched",
+          "to": "failed",
+          "guard": "dispatch_proven_not_invoked_and_lease_ended",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_under_bounded_retry_policy",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "dispatched",
+          "to": "cancelled",
+          "guard": "cancel_prevents_invocation",
+          "owner": "coordinator",
+          "retry": "terminal_for_attempt",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "dispatched",
+          "to": "unknown_effect",
+          "guard": "invocation_may_have_occurred_but_result_is_missing",
+          "owner": "coordinator",
+          "retry": "never_automatically",
+          "reconciliation": "required",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "awaiting_approval",
+          "guard": "material_effect_is_blocked_before_invocation",
+          "owner": "coordinator",
+          "retry": "resume_after_exact_approval",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "paused",
+          "guard": "pause_tracks_worker_and_any_inflight_effect",
+          "owner": "coordinator",
+          "retry": "resume_only_after_authority_recheck",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "verifying",
+          "guard": "result_and_exact_artifact_digest_are_recorded",
+          "owner": "coordinator",
+          "retry": "new_attempt_on_retry",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "failed",
+          "guard": "attempt_failed_and_external_effect_is_known",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_under_bounded_retry_policy",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "cancelled",
+          "guard": "cancelled_and_no_external_effect_is_ambiguous",
+          "owner": "coordinator",
+          "retry": "terminal_for_attempt",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "running",
+          "to": "unknown_effect",
+          "guard": "external_effect_outcome_cannot_be_established",
+          "owner": "coordinator",
+          "retry": "never_automatically",
+          "reconciliation": "required",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "awaiting_approval",
+          "to": "running",
+          "guard": "exact_action_approved_and_current_authority_rechecked",
+          "owner": "user_and_coordinator",
+          "retry": "resume_same_attempt_only_if_still_live",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "awaiting_approval",
+          "to": "cancelled",
+          "guard": "user_denies_or_cancels_before_effect_invocation",
+          "owner": "user_and_coordinator",
+          "retry": "terminal_for_attempt",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "paused",
+          "to": "running",
+          "guard": "same_attempt_is_live_and_current_authority_revalidated",
+          "owner": "coordinator",
+          "retry": "resume_same_attempt",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "paused",
+          "to": "cancelled",
+          "guard": "cancel_prevents_further_work_and_ambiguous_effects_are_reconciled",
+          "owner": "coordinator",
+          "retry": "terminal_for_attempt",
+          "reconciliation": "required_for_ambiguous_effects",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "verifying",
+          "to": "succeeded",
+          "guard": "independent_receipt_accepts_exact_artifact_digest",
+          "owner": "coordinator",
+          "retry": "terminal_for_attempt",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "verifying",
+          "to": "failed",
+          "guard": "independent_verification_rejects_or_failure_policy_exhausted",
+          "owner": "coordinator",
+          "retry": "new_attempt_only_under_bounded_retry_policy",
+          "reconciliation": "none",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "verifying",
+          "to": "unknown_effect",
+          "guard": "verification_cannot_establish_external_effect_outcome",
+          "owner": "coordinator",
+          "retry": "never_automatically",
+          "reconciliation": "required",
+          "events": [
+            "attempt.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "reconciled",
+          "guard": "independent_evidence_establishes_effect_outcome",
+          "owner": "coordinator",
+          "retry": "terminal_for_attempt",
+          "reconciliation": "required",
+          "events": [
+            "attempt.state.changed"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Effect",
+      "states": [
+        "recorded",
+        "authorized",
+        "invoking",
+        "applied",
+        "failed",
+        "cancelled",
+        "unknown_effect",
+        "reconciled_applied",
+        "reconciled_not_applied"
+      ],
+      "transitions": [
+        {
+          "from": "recorded",
+          "to": "authorized",
+          "guard": "exact_action_target_artifact_grant_and_policy_approval_validated_against_current_deny_rules",
+          "owner": "coordinator",
+          "retry": "same_intent_until_invocation",
+          "reconciliation": "none",
+          "events": [
+            "effect.state.changed"
+          ]
+        },
+        {
+          "from": "recorded",
+          "to": "cancelled",
+          "guard": "cancel_or_denial_prevents_invocation",
+          "owner": "coordinator",
+          "retry": "terminal_for_intent",
+          "reconciliation": "none",
+          "events": [
+            "effect.state.changed"
+          ]
+        },
+        {
+          "from": "authorized",
+          "to": "invoking",
+          "guard": "current_fenced_lease_rechecked_and_invoking_event_durably_committed_before_effect_call",
+          "owner": "coordinator",
+          "retry": "no_replay_after_invocation_may_begin",
+          "reconciliation": "none",
+          "events": [
+            "effect.state.changed"
+          ],
+          "crash_recovery": "committed_invoking_without_terminal_receipt_becomes_unknown_effect_without_replay"
+        },
+        {
+          "from": "authorized",
+          "to": "cancelled",
+          "guard": "cancel_prevents_invocation_before_effect_boundary",
+          "owner": "coordinator",
+          "retry": "terminal_for_intent",
+          "reconciliation": "none",
+          "events": [
+            "effect.state.changed"
+          ]
+        },
+        {
+          "from": "invoking",
+          "to": "applied",
+          "guard": "matching_effect_receipt_confirms_exact_intent_and_action_digest",
+          "owner": "coordinator",
+          "retry": "terminal_for_intent",
+          "reconciliation": "none",
+          "events": [
+            "effect.state.changed"
+          ]
+        },
+        {
+          "from": "invoking",
+          "to": "failed",
+          "guard": "independent_evidence_proves_no_effect_was_applied",
+          "owner": "coordinator",
+          "retry": "new_intent_only_after_current_authority_and_policy_retry_check",
+          "reconciliation": "evidence_required",
+          "events": [
+            "effect.state.changed"
+          ]
+        },
+        {
+          "from": "invoking",
+          "to": "unknown_effect",
+          "guard": "invocation_may_have_occurred_but_outcome_is_not_established",
+          "owner": "coordinator",
+          "retry": "never_replay_this_intent",
+          "reconciliation": "required",
+          "events": [
+            "effect.state.changed"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "reconciled_applied",
+          "guard": "independent_evidence_source_proves_exact_effect_was_applied",
+          "owner": "coordinator",
+          "retry": "terminal_for_intent",
+          "reconciliation": "required",
+          "events": [
+            "effect.reconciled"
+          ]
+        },
+        {
+          "from": "unknown_effect",
+          "to": "reconciled_not_applied",
+          "guard": "independent_evidence_source_proves_effect_was_not_applied",
+          "owner": "coordinator",
+          "retry": "new_intent_only_after_explicit_current_authorization",
+          "reconciliation": "required",
+          "events": [
+            "effect.reconciled"
+          ]
+        }
+      ]
+    }
+  ]
+}

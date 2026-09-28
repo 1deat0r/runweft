@@ -6,6 +6,9 @@ and verification tied to exact artifacts. Working name; availability is not clea
 **Status: scaffold only.** The CLI can display metadata. The coordinator refuses to
 start, the example provider is metadata-only, and the inspector has no backend.
 There is no model access, tool execution, persistent ledger or security sandbox yet.
+The v1 protocol schema, bindings, and cross-language validators are implemented for
+contract testing; they do not provide a coordinator, durable state, production IPC,
+or effect execution.
 
 ## Start here
 
@@ -48,17 +51,22 @@ cargo run --locked -p runweft-cli -- status --json
 ```
 
 For the static development inspector, run `npm run typecheck` once, then `npm run dev`.
-It binds to loopback. It cannot control a daemon. `npm run generate` updates the
-provisional constant-only status bindings; `npm run check:generated` detects drift.
+It binds to loopback. It cannot control a daemon. `npm run generate` updates scaffold
+status and protocol bindings, metadata, transition allow-lists, and generated docs;
+`npm run check:generated` verifies that all outputs match their sources. Run
+`npm run build && node scripts/measure-ipc.mjs` for the manual local socket framing
+and validation probe. Its results are recorded in
+[the IPC measurement note](docs/protocol-ipc-measurement.md). Protocol validation
+and test fakes do not enable CLI or daemon execution.
 The working name has not been cleared for trademark or package use.
 
 ## Layout
 
 ```text
-crates/                 Rust protocol seed, authority placeholder, CLI and daemon stub
-packages/               TypeScript protocol, adapter SDK and provider metadata example
+crates/                 Rust protocol contracts, authority placeholder, CLI and daemon stub
+packages/               TypeScript protocol contracts, adapter SDK and provider metadata example
 apps/inspector/         React/Vite static shell, no runtime connection
-schemas/                Provisional status source schema
+schemas/                Status and versioned protocol sources and policies
 migrations/             Reserved ledger migration boundary; no executable schema yet
 evals/                  Offline analysis script; synthetic checks are not benchmarks
 tests/ scripts/         Cross-language contract checks and development tooling

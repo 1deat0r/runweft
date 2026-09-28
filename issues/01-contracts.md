@@ -1,6 +1,6 @@
 # 01-contracts
 
-Status: Ready
+Status: Local implementation acceptance met (2026-09-29). The linked GitHub tracking issue has not been changed.
 Spec revision: S2
 Type: design/spike. Phase: 0. Blocked by: none (S2 is approved; owner authorization is recorded in GitHub issue #4).
 What/why: define one command/event contract and prove the Rust/TypeScript split is practical.
@@ -9,4 +9,4 @@ Acceptance: the lifecycle table and error union are complete, and 100% of 50 ver
 Rule: DIES if any unauthorized critical variant executes; SURVIVES if the lifecycle/error/incarnation contract is frozen and 50/50 fixtures pass; otherwise WEAKENS.
 Falsifier/null: split adds complexity without independent authority. Risk: overgeneralized schemas. Owner role: runtime lead.
 
-This ticket is future work. Scaffold checks do not satisfy its implementation acceptance.
+Implementation: Rust and TypeScript independently validate the frozen schema against the 50-case oracle, behavior fixtures, and raw-wire boundary corpus. The local IPC prototype and measurement are recorded in `docs/protocol-ipc-measurement.md`. This remains protocol contract/validation work; it does not start runtime execution or close the linked GitHub issue.

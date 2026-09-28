@@ -1,0 +1,2695 @@
+{
+  "schema_version": 1,
+  "description": "Literal v1.0 protocol oracle; expected results are fixed independently of validators.",
+  "categories": {
+    "valid": 12,
+    "version": 8,
+    "malformed": 8,
+    "extension": 6,
+    "unknown_critical": 6,
+    "stale_incarnation": 5,
+    "stale_generation_lease": 5
+  },
+  "cases": [
+    {
+      "id": "valid-01-run-submit",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "0"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "0"
+          }
+        }
+      }
+    },
+    {
+      "id": "valid-02-worker-result",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "worker",
+          "id": "worker-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "attempt.result.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease": {
+            "profile_id": "profile-1",
+            "project_id": "project-1",
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-1",
+            "lease_id": "lease-1",
+            "profile_incarnation": "incarnation-1",
+            "coordinator_generation": "7",
+            "epoch": "2"
+          },
+          "artifact_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "attempt.result.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-1",
+            "lease": {
+              "profile_id": "profile-1",
+              "project_id": "project-1",
+              "run_id": "run-1",
+              "task_id": "task-1",
+              "attempt_id": "attempt-1",
+              "lease_id": "lease-1",
+              "profile_incarnation": "incarnation-1",
+              "coordinator_generation": "7",
+              "epoch": "2"
+            },
+            "artifact_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      }
+    },
+    {
+      "id": "valid-03-effect-approval",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "effect.approve",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "effect_intent_id": "effect-1",
+          "action_id": "workspace.file.write",
+          "target_id": "workspace-alpha",
+          "artifact_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "grant_revision_id": "grant-r1",
+          "policy_revision_id": "policy-r1",
+          "action_digest": "8e18f06b26df78ccc4f6d360032cf0da628d534baf37e8742cb97a1c7e014511"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "effect.approve",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "effect_intent_id": "effect-1",
+            "action_id": "workspace.file.write",
+            "target_id": "workspace-alpha",
+            "artifact_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "grant_revision_id": "grant-r1",
+            "policy_revision_id": "policy-r1",
+            "action_digest": "8e18f06b26df78ccc4f6d360032cf0da628d534baf37e8742cb97a1c7e014511"
+          }
+        }
+      }
+    },
+    {
+      "id": "valid-04-reconciliation-proposal",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "reconciler",
+          "id": "reconciler-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "effect.reconciliation.propose",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "effect_intent_id": "effect-1",
+          "evidence_source_id": "upstream-1",
+          "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "claimed_outcome": "not_applied"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "effect.reconciliation.propose",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1",
+            "effect_intent_id": "effect-1",
+            "evidence_source_id": "upstream-1",
+            "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "claimed_outcome": "not_applied"
+          }
+        }
+      }
+    },
+    {
+      "id": "valid-05-graph-event",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "event",
+        "variant": "graph.revision.state.changed",
+        "event_id": "event-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "run_id": "run-1",
+        "sequence": "18446744073709551615",
+        "causation_id": "cmd-1",
+        "actor": {
+          "kind": "user",
+          "id": "owner-1"
+        },
+        "graph_revision_id": "graph-1",
+        "policy_revision_id": "policy-r1",
+        "observed_at": "2026-09-29T12:00:00Z",
+        "payload": {
+          "graph_revision_id": "graph-1",
+          "from_state": "validated",
+          "to_state": "admitted",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "event",
+          "variant": "graph.revision.state.changed",
+          "event_id": "event-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "run_id": "run-1",
+          "sequence": "18446744073709551615",
+          "causation_id": "cmd-1",
+          "actor": {
+            "kind": "user",
+            "id": "owner-1"
+          },
+          "graph_revision_id": "graph-1",
+          "policy_revision_id": "policy-r1",
+          "observed_at": "2026-09-29T12:00:00Z",
+          "payload": {
+            "graph_revision_id": "graph-1",
+            "from_state": "validated",
+            "to_state": "admitted",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          }
+        }
+      }
+    },
+    {
+      "id": "valid-06-effect-reconciled-event",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "event",
+        "variant": "effect.reconciled",
+        "event_id": "event-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "run_id": "run-1",
+        "sequence": "12",
+        "causation_id": "cmd-1",
+        "actor": {
+          "kind": "reconciler",
+          "id": "reconciler-1"
+        },
+        "graph_revision_id": "graph-1",
+        "policy_revision_id": "policy-r1",
+        "observed_at": "2026-09-29T12:00:00Z",
+        "payload": {
+          "run_id": "run-1",
+          "effect_intent_id": "effect-1",
+          "from_state": "unknown_effect",
+          "to_state": "reconciled_applied",
+          "action_digest": "8e18f06b26df78ccc4f6d360032cf0da628d534baf37e8742cb97a1c7e014511",
+          "target_id": "workspace-alpha",
+          "artifact_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "lease": {
+            "profile_id": "profile-1",
+            "project_id": "project-1",
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-1",
+            "lease_id": "lease-1",
+            "profile_incarnation": "incarnation-1",
+            "coordinator_generation": "7",
+            "epoch": "2"
+          },
+          "evidence_source_id": "upstream-1",
+          "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "outcome": "applied"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "event",
+          "variant": "effect.reconciled",
+          "event_id": "event-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "run_id": "run-1",
+          "sequence": "12",
+          "causation_id": "cmd-1",
+          "actor": {
+            "kind": "reconciler",
+            "id": "reconciler-1"
+          },
+          "graph_revision_id": "graph-1",
+          "policy_revision_id": "policy-r1",
+          "observed_at": "2026-09-29T12:00:00Z",
+          "payload": {
+            "run_id": "run-1",
+            "effect_intent_id": "effect-1",
+            "from_state": "unknown_effect",
+            "to_state": "reconciled_applied",
+            "action_digest": "8e18f06b26df78ccc4f6d360032cf0da628d534baf37e8742cb97a1c7e014511",
+            "target_id": "workspace-alpha",
+            "artifact_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "lease": {
+              "profile_id": "profile-1",
+              "project_id": "project-1",
+              "run_id": "run-1",
+              "task_id": "task-1",
+              "attempt_id": "attempt-1",
+              "lease_id": "lease-1",
+              "profile_incarnation": "incarnation-1",
+              "coordinator_generation": "7",
+              "epoch": "2"
+            },
+            "evidence_source_id": "upstream-1",
+            "evidence_digest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            "outcome": "applied"
+          }
+        }
+      }
+    },
+    {
+      "id": "valid-07-run-transition",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "lifecycle-transition",
+        "entity": "Run",
+        "from": "admitted",
+        "to": "running"
+      },
+      "expected": {
+        "status": "accepted",
+        "transition": {
+          "kind": "lifecycle-transition",
+          "entity": "Run",
+          "from": "admitted",
+          "to": "running"
+        }
+      }
+    },
+    {
+      "id": "valid-08-graph-transition",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "lifecycle-transition",
+        "entity": "GraphRevision",
+        "from": "draft",
+        "to": "validated"
+      },
+      "expected": {
+        "status": "accepted",
+        "transition": {
+          "kind": "lifecycle-transition",
+          "entity": "GraphRevision",
+          "from": "draft",
+          "to": "validated"
+        }
+      }
+    },
+    {
+      "id": "valid-09-task-transition",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "lifecycle-transition",
+        "entity": "Task",
+        "from": "queued",
+        "to": "ready"
+      },
+      "expected": {
+        "status": "accepted",
+        "transition": {
+          "kind": "lifecycle-transition",
+          "entity": "Task",
+          "from": "queued",
+          "to": "ready"
+        }
+      }
+    },
+    {
+      "id": "valid-10-attempt-transition",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "lifecycle-transition",
+        "entity": "Attempt",
+        "from": "created",
+        "to": "dispatched"
+      },
+      "expected": {
+        "status": "accepted",
+        "transition": {
+          "kind": "lifecycle-transition",
+          "entity": "Attempt",
+          "from": "created",
+          "to": "dispatched"
+        }
+      }
+    },
+    {
+      "id": "valid-11-effect-authorize-transition",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "lifecycle-transition",
+        "entity": "Effect",
+        "from": "recorded",
+        "to": "authorized"
+      },
+      "expected": {
+        "status": "accepted",
+        "transition": {
+          "kind": "lifecycle-transition",
+          "entity": "Effect",
+          "from": "recorded",
+          "to": "authorized"
+        }
+      }
+    },
+    {
+      "id": "valid-12-effect-reconcile-transition",
+      "category": "valid",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "lifecycle-transition",
+        "entity": "Effect",
+        "from": "unknown_effect",
+        "to": "reconciled_applied"
+      },
+      "expected": {
+        "status": "accepted",
+        "transition": {
+          "kind": "lifecycle-transition",
+          "entity": "Effect",
+          "from": "unknown_effect",
+          "to": "reconciled_applied"
+        }
+      }
+    },
+    {
+      "id": "version-01-old-minor",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "0.9",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unsupported_version"
+      }
+    },
+    {
+      "id": "version-02-unknown-variant-precedence",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "2.0",
+        "kind": "command",
+        "variant": "future.command",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unsupported_version"
+      }
+    },
+    {
+      "id": "version-03-new-minor",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.1",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unsupported_version"
+      }
+    },
+    {
+      "id": "version-04-new-major",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "2.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unsupported_version"
+      }
+    },
+    {
+      "id": "version-05-empty-string",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unsupported_version"
+      }
+    },
+    {
+      "id": "version-06-missing",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "version-07-number",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": 1,
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "version-08-null",
+      "category": "version",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": null,
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-01-missing-command-id",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-02-payload-not-object",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": "bad"
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-03-unknown-envelope-field",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        },
+        "debug": true
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_field"
+      }
+    },
+    {
+      "id": "malformed-04-u64-max-plus-one",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "18446744073709551616",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-05-u128-max-plus-one",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "340282366920938463463374607431768211456"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-06-leading-zero-u64",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "07",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-07-unsafe-extension-integer",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        },
+        "extensions": {
+          "example.org.value": 9007199254740992
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "malformed-08-invalid-date-time",
+      "category": "malformed",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "event",
+        "variant": "run.state.changed",
+        "event_id": "event-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "run_id": "run-1",
+        "sequence": "12",
+        "causation_id": "cmd-1",
+        "actor": {
+          "kind": "user",
+          "id": "owner-1"
+        },
+        "graph_revision_id": "graph-1",
+        "policy_revision_id": "policy-r1",
+        "observed_at": "2026-09-29T12:00:00.1234567890Z",
+        "payload": {
+          "run_id": "run-1",
+          "from_state": "running",
+          "to_state": "paused"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "malformed_payload"
+      }
+    },
+    {
+      "id": "extension-01-namespaced-string",
+      "category": "extension",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "18446744073709551615",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "18446744073709551615",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "340282366920938463463374607431768211455"
+        },
+        "extensions": {
+          "example.org.note": "keep me"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.submit",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "18446744073709551615",
+          "payload": {
+            "run_id": "run-1",
+            "graph_revision_id": "graph-1",
+            "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "requested_budget_micro_usd": "340282366920938463463374607431768211455"
+          },
+          "extensions": {
+            "example.org.note": "keep me"
+          }
+        }
+      }
+    },
+    {
+      "id": "extension-02-exact-numeric-string",
+      "category": "extension",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1"
+        },
+        "extensions": {
+          "example.org.max-int": "9007199254740991"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.pause",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1"
+          },
+          "extensions": {
+            "example.org.max-int": "9007199254740991"
+          }
+        }
+      }
+    },
+    {
+      "id": "extension-03-nested-safe-values",
+      "category": "extension",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1"
+        },
+        "extensions": {
+          "example.org.data": {
+            "labels": [
+              "a",
+              "b"
+            ],
+            "enabled": true,
+            "count": "3",
+            "empty": null
+          }
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.pause",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1"
+          },
+          "extensions": {
+            "example.org.data": {
+              "labels": [
+                "a",
+                "b"
+              ],
+              "enabled": true,
+              "count": "3",
+              "empty": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "extension-04-multiple-namespaces",
+      "category": "extension",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1"
+        },
+        "extensions": {
+          "example.org.one": false,
+          "vendor.net.two": "x"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.pause",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1"
+          },
+          "extensions": {
+            "example.org.one": false,
+            "vendor.net.two": "x"
+          }
+        }
+      }
+    },
+    {
+      "id": "extension-05-unicode-string",
+      "category": "extension",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1"
+        },
+        "extensions": {
+          "example.org.text": "Māori — 東京"
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "command",
+          "variant": "run.pause",
+          "command_id": "cmd-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "payload": {
+            "run_id": "run-1"
+          },
+          "extensions": {
+            "example.org.text": "Māori — 東京"
+          }
+        }
+      }
+    },
+    {
+      "id": "extension-06-event-extension",
+      "category": "extension",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "event",
+        "variant": "run.state.changed",
+        "event_id": "event-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "run_id": "run-1",
+        "sequence": "12",
+        "causation_id": "cmd-1",
+        "actor": {
+          "kind": "user",
+          "id": "owner-1"
+        },
+        "graph_revision_id": "graph-1",
+        "policy_revision_id": "policy-r1",
+        "observed_at": "2026-09-29T12:00:00Z",
+        "payload": {
+          "run_id": "run-1",
+          "from_state": "running",
+          "to_state": "paused"
+        },
+        "extensions": {
+          "example.org.trace": [
+            "α",
+            "0",
+            null
+          ]
+        }
+      },
+      "expected": {
+        "status": "accepted",
+        "message": {
+          "protocol_version": "1.0",
+          "kind": "event",
+          "variant": "run.state.changed",
+          "event_id": "event-1",
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "run_id": "run-1",
+          "sequence": "12",
+          "causation_id": "cmd-1",
+          "actor": {
+            "kind": "user",
+            "id": "owner-1"
+          },
+          "graph_revision_id": "graph-1",
+          "policy_revision_id": "policy-r1",
+          "observed_at": "2026-09-29T12:00:00Z",
+          "payload": {
+            "run_id": "run-1",
+            "from_state": "running",
+            "to_state": "paused"
+          },
+          "extensions": {
+            "example.org.trace": [
+              "α",
+              "0",
+              null
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "unknown-01-command",
+      "category": "unknown_critical",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.rewind",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_critical_variant"
+      }
+    },
+    {
+      "id": "unknown-02-event",
+      "category": "unknown_critical",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "event",
+        "variant": "run.rewind",
+        "event_id": "event-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "run_id": "run-1",
+        "sequence": "12",
+        "causation_id": "cmd-1",
+        "actor": {
+          "kind": "user",
+          "id": "owner-1"
+        },
+        "graph_revision_id": "graph-1",
+        "policy_revision_id": "policy-r1",
+        "observed_at": "2026-09-29T12:00:00Z",
+        "payload": {}
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_critical_variant"
+      }
+    },
+    {
+      "id": "unknown-03-response",
+      "category": "unknown_critical",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "response",
+        "variant": "command.retried",
+        "correlation_id": "corr-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "command_id": "cmd-1",
+          "event_sequence": "12"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_critical_variant"
+      }
+    },
+    {
+      "id": "unknown-04-error",
+      "category": "unknown_critical",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "error",
+        "variant": "protocol.warning",
+        "correlation_id": "corr-1",
+        "payload": {
+          "code": "malformed_payload"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_critical_variant"
+      }
+    },
+    {
+      "id": "unknown-05-known-variant-wrong-kind",
+      "category": "unknown_critical",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.state.changed",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_critical_variant"
+      }
+    },
+    {
+      "id": "unknown-06-obsolete-reconcile-name",
+      "category": "unknown_critical",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "effect.reconcile",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "graph_revision_id": "graph-1",
+          "graph_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "requested_budget_micro_usd": "1000"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "unknown_critical_variant"
+      }
+    },
+    {
+      "id": "incarnation-01-user-command",
+      "category": "stale_incarnation",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-old",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_profile_incarnation"
+      }
+    },
+    {
+      "id": "incarnation-02-worker-result",
+      "category": "stale_incarnation",
+      "authority": {
+        "peer": {
+          "role": "worker",
+          "id": "worker-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "attempt.result.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-old",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease": {
+            "profile_id": "profile-1",
+            "project_id": "project-1",
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-1",
+            "lease_id": "lease-1",
+            "profile_incarnation": "incarnation-old",
+            "coordinator_generation": "7",
+            "epoch": "2"
+          },
+          "artifact_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_profile_incarnation"
+      }
+    },
+    {
+      "id": "incarnation-03-coordinator-event",
+      "category": "stale_incarnation",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "event",
+        "variant": "run.state.changed",
+        "event_id": "event-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-old",
+        "coordinator_generation": "7",
+        "run_id": "run-1",
+        "sequence": "12",
+        "causation_id": "cmd-1",
+        "actor": {
+          "kind": "user",
+          "id": "owner-1"
+        },
+        "graph_revision_id": "graph-1",
+        "policy_revision_id": "policy-r1",
+        "observed_at": "2026-09-29T12:00:00Z",
+        "payload": {
+          "run_id": "run-1",
+          "from_state": "running",
+          "to_state": "paused"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_profile_incarnation"
+      }
+    },
+    {
+      "id": "incarnation-04-coordinator-response",
+      "category": "stale_incarnation",
+      "authority": {
+        "peer": {
+          "role": "coordinator",
+          "id": "coord-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "response",
+        "variant": "command.accepted",
+        "correlation_id": "corr-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-old",
+        "coordinator_generation": "7",
+        "payload": {
+          "command_id": "cmd-1",
+          "event_sequence": "12"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_profile_incarnation"
+      }
+    },
+    {
+      "id": "incarnation-05-approval",
+      "category": "stale_incarnation",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "effect.approve",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-old",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "effect_intent_id": "effect-1",
+          "action_id": "workspace.file.write",
+          "target_id": "workspace-alpha",
+          "artifact_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "grant_revision_id": "grant-r1",
+          "policy_revision_id": "policy-r1",
+          "action_digest": "8e18f06b26df78ccc4f6d360032cf0da628d534baf37e8742cb97a1c7e014511"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_profile_incarnation"
+      }
+    },
+    {
+      "id": "fence-01-old-generation",
+      "category": "stale_generation_lease",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "6",
+        "payload": {
+          "run_id": "run-1"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_coordinator_generation"
+      }
+    },
+    {
+      "id": "fence-02-future-generation",
+      "category": "stale_generation_lease",
+      "authority": {
+        "peer": {
+          "role": "user",
+          "id": "owner-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "run.pause",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "8",
+        "payload": {
+          "run_id": "run-1"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_coordinator_generation"
+      }
+    },
+    {
+      "id": "fence-03-lease-id",
+      "category": "stale_generation_lease",
+      "authority": {
+        "peer": {
+          "role": "worker",
+          "id": "worker-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "attempt.result.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease": {
+            "profile_id": "profile-1",
+            "project_id": "project-1",
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-1",
+            "lease_id": "lease-old",
+            "profile_incarnation": "incarnation-1",
+            "coordinator_generation": "7",
+            "epoch": "2"
+          },
+          "artifact_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_lease"
+      }
+    },
+    {
+      "id": "fence-04-lease-epoch",
+      "category": "stale_generation_lease",
+      "authority": {
+        "peer": {
+          "role": "worker",
+          "id": "worker-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "attempt.result.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease": {
+            "profile_id": "profile-1",
+            "project_id": "project-1",
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-1",
+            "lease_id": "lease-1",
+            "profile_incarnation": "incarnation-1",
+            "coordinator_generation": "7",
+            "epoch": "3"
+          },
+          "artifact_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_lease"
+      }
+    },
+    {
+      "id": "fence-05-cross-attempt-lease",
+      "category": "stale_generation_lease",
+      "authority": {
+        "peer": {
+          "role": "worker",
+          "id": "worker-1"
+        },
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "current_lease": {
+          "profile_id": "profile-1",
+          "project_id": "project-1",
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease_id": "lease-1",
+          "profile_incarnation": "incarnation-1",
+          "coordinator_generation": "7",
+          "epoch": "2",
+          "assigned_peer_id": "worker-1"
+        }
+      },
+      "input": {
+        "protocol_version": "1.0",
+        "kind": "command",
+        "variant": "attempt.result.submit",
+        "command_id": "cmd-1",
+        "profile_id": "profile-1",
+        "project_id": "project-1",
+        "profile_incarnation": "incarnation-1",
+        "coordinator_generation": "7",
+        "payload": {
+          "run_id": "run-1",
+          "task_id": "task-1",
+          "attempt_id": "attempt-1",
+          "lease": {
+            "profile_id": "profile-1",
+            "project_id": "project-1",
+            "run_id": "run-1",
+            "task_id": "task-1",
+            "attempt_id": "attempt-2",
+            "lease_id": "lease-1",
+            "profile_incarnation": "incarnation-1",
+            "coordinator_generation": "7",
+            "epoch": "2"
+          },
+          "artifact_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      },
+      "expected": {
+        "status": "rejected",
+        "code": "stale_lease"
+      }
+    }
+  ],
+  "variant_coverage": {
+    "run.submit": "cases.json#valid-01-run-submit",
+    "attempt.result.submit": "cases.json#valid-02-worker-result",
+    "effect.approve": "cases.json#valid-03-effect-approval",
+    "effect.reconciliation.propose": "cases.json#valid-04-reconciliation-proposal",
+    "run.pause": "behavior-cases.json#variant-positive-run-pause",
+    "run.resume": "behavior-cases.json#variant-positive-run-resume",
+    "run.cancel": "behavior-cases.json#variant-positive-run-cancel",
+    "run.admitted": "behavior-cases.json#variant-positive-run-admitted",
+    "run.state.changed": "behavior-cases.json#variant-positive-run-state-changed",
+    "graph.revision.state.changed": "cases.json#valid-05-graph-event",
+    "task.state.changed": "behavior-cases.json#variant-positive-task-state-changed",
+    "attempt.state.changed": "behavior-cases.json#variant-positive-attempt-state-changed",
+    "effect.intent.recorded": "behavior-cases.json#variant-positive-effect-intent-recorded",
+    "effect.state.changed": "behavior-cases.json#variant-positive-effect-state-changed",
+    "effect.reconciled": "cases.json#valid-06-effect-reconciled-event",
+    "command.accepted": "behavior-cases.json#variant-positive-command-accepted",
+    "command.rejected": "behavior-cases.json#variant-positive-command-rejected",
+    "protocol.error": "behavior-cases.json#variant-positive-protocol-error"
+  }
+}
