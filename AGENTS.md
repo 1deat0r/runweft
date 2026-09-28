@@ -55,9 +55,10 @@ the PR-only rule applies to every subsequent change.
   workflows, or branch-protection policy require all five seats on one frozen commit.
   The implementer cannot review its own work. Record each agent identifier, seat,
   verdict, reviewed commit SHA, evaluation evidence, numbered findings, and
-  quote-verified blocker closures in the PR's structured review receipt. Any code
-  change after review invalidates the receipt and requires a fresh review of the new
-  head. Never share peer verdicts before reviewers vote.
+  quote-verified blocker closures in the PR's structured review receipt. List all
+  five seats there and state why any omitted seat is not relevant. Any code change
+  after review invalidates the receipt and requires a fresh review of the new head.
+  Never share peer verdicts before reviewers vote.
 - `agent-review-record` checks receipt shape, seat coverage, and SHA consistency; it
   does not prove that an agent actually ran. Reviewers must be separate agent
   invocations, and the project maintainer must not treat a self-authored receipt as

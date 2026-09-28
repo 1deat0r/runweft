@@ -24,7 +24,7 @@ BASE_SEATS = {
 FULL_BOARD_SEATS = SEATS
 SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 RECEIPT_RE = re.compile(
-    r"(?ms)^```agent-review[ \t]*\r?\n(.*?)^```[ \t]*$"
+    r"(?ms)^```agent-review[ \t]*\r?\n(.*?)^```[ \t]*\r?$"
 )
 FULL_BOARD_PATHS = {
     "AGENTS.md",
@@ -32,6 +32,7 @@ FULL_BOARD_PATHS = {
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/branch-protection-main.json",
     ".github/scripts/validate_agent_review.py",
+    "SECURITY.md",
     "docs/evaluation-protocol.md",
     "docs/threat-model.md",
     "spec.md",
@@ -49,6 +50,7 @@ SECURITY_PATHS = FULL_BOARD_PREFIXES + (
     ".github/workflows/",
     "AGENTS.md",
     "CONTRIBUTING.md",
+    "SECURITY.md",
     "docs/threat-model.md",
     "migrations/",
 )
@@ -124,6 +126,21 @@ def main() -> None:
     required_set = set(required)
     if len(required_set) != len(required) or not BASE_SEATS.issubset(required_set):
         fail("required_seats must be unique and include implementation and evaluation")
+    omitted = receipt.get("omitted_seats")
+    if not isinstance(omitted, list):
+        fail("omitted_seats must list every seat not included in required_seats")
+    omitted_set: set[str] = set()
+    for omission in omitted:
+        if not isinstance(omission, dict):
+            fail("each omitted seat must have a reason")
+        seat = omission.get("seat")
+        if not isinstance(seat, str) or seat not in SEATS or seat in omitted_set:
+            fail("omitted seats must be recognized and appear once")
+        if not nonempty(omission.get("reason")):
+            fail(f"omitted seat {seat} requires a relevance reason")
+        omitted_set.add(seat)
+    if required_set & omitted_set or required_set | omitted_set != SEATS:
+        fail("required and omitted seats must account for all five review roles")
 
     reviews = receipt.get("reviews")
     if not isinstance(reviews, list):

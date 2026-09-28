@@ -59,10 +59,10 @@ receipt. The evaluation reviewer records acceptance evidence or explains why
 evaluation is not applicable, plus evaluation scope and potential impact. Explain
 why any risk seat was omitted. Every reviewer works from the same frozen commit
 with a separate prompt and reports independently; do not share peer verdicts or
-findings before votes. Record findings by stable ID; blockers include exact
-file/line references, impact, and a testable closure condition. Re-check each
-closure against the final diff and evidence. Any new commit invalidates all previous
-review receipts. Changes to
+findings before votes. Record why every omitted seat is not relevant. Record
+findings by stable ID; blockers include exact file/line references, impact, and a
+testable closure condition. Re-check each closure against the final diff and evidence.
+Any new commit invalidates all previous review receipts. Changes to
 normative spec or architecture, this review protocol, CI workflows, or branch
 protection require all five seats and use the complete frozen-snapshot process in
 `spec.md` §12. Approval of an implementation plan does not imply runtime acceptance.

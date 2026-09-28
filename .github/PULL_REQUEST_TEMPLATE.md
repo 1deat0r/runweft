@@ -1,6 +1,6 @@
 ## Issue and authorization
 
-Issue reference (for example, `References #123`):
+Issue reference (for example, `References #<N>`):
 
 - User-authorized scope:
 - Relevant ticket and spec revision:
@@ -32,6 +32,11 @@ independent seats must review the same frozen commit before publishing the recei
     "implementation/developer-experience",
     "evaluation/confounds"
   ],
+  "omitted_seats": [
+    { "seat": "systems/durability", "reason": "WHY THIS SEAT IS NOT RELEVANT" },
+    { "seat": "adversarial/security", "reason": "WHY THIS SEAT IS NOT RELEVANT" },
+    { "seat": "product/scope", "reason": "WHY THIS SEAT IS NOT RELEVANT" }
+  ],
   "reviews": [],
   "evaluation": {
     "reviewer_agent": "REPLACE_WITH_EVALUATION_REVIEWER_ID",
@@ -47,7 +52,9 @@ Each review item must include `seat`, `reviewer_agent`, `reviewed_head_sha`,
 `verdict` (`APPROVE`), and a concise `summary`. Evaluation may be
 `NOT_APPLICABLE` only with a `reason` instead of `evidence`. Every finding must
 include a stable ID and severity; blockers also include location, impact, a closure
-condition, and closure evidence with a quote from the final diff.
+condition, and closure evidence with a quote from the final diff. List every seat
+not included in `required_seats` under `omitted_seats` with a reason; use an empty
+array for a full five-seat board.
 
 ## Author checklist
 
