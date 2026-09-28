@@ -392,20 +392,30 @@ complete policy inventory; specified p95 local command latency below 150 ms at 3
 active synthetic attempts; independent security review. Failures/missing evidence
 block the associated release claims. Scaffold checks cannot substitute for them.
 
-## 12. Board gate and records
+## 12. Normative decisions and review records
 
-Five independent seats: systems/durability, adversarial security, implementation/
-developer experience, evaluation/confounds, and a fresh product/scope cold reader.
-They review frozen identical bytes in bounded parallel batches. No reviewer sees peer
-votes before deciding. Findings must cite exact text and a closure condition. Every
-material objection is adjudicated against evidence, fixed in the spec or explicitly
-refuted with evidence, and rechecked by quote. Do not force approval to satisfy the
-desired outcome. Cap review at five rounds; report unresolved dissent if necessary.
+Review effort follows consequence and uncertainty. Routine implementation changes
+use the local verification and diff-review workflow in `CONTRIBUTING.md`. Normative
+specification and architecture changes use a frozen revision and independent
+reviewers selected for the decisions they affect. Include adversarial security for
+authority, trust-boundary, or security-policy changes; systems/durability for
+protocol, state, persistence, or recovery; implementation for feasibility and
+integration; evaluation for claims and acceptance evidence; and product/scope for
+user-facing requirements and architecture. Use all five perspectives when the
+change crosses those risks, not simply because a particular path changed.
 
-Board BUILD means this spec/scaffold is suitable to implement and test, not that the
-unbuilt runtime has passed its future gates. No runtime ticket is marked implemented
-by a vote. Current-round manifests bind spec, threat model, tickets, schemas and
-scaffold source; lockfile/build evidence is recorded separately.
+Keep reviewers' first-pass reports independent when practical. Findings state the
+exact artifact, impact, and testable closure condition. Recheck material closures
+against the final revision and record unresolved dissent with its evidence. Review
+is not authorization to expand scope, implement a proposed ticket, publish, or
+release. The owner authorizes the task and remains responsible for high-impact
+external actions.
+
+A BUILD decision on this specification or scaffold means it is suitable to
+implement and test; it does not mean that the unbuilt runtime has passed its future
+gates. No runtime ticket is marked implemented by a vote. Round manifests bind the
+reviewed specification, threat model, tickets, schemas, and scaffold source;
+lockfile and build evidence is recorded separately.
 
 Board record: S1 received two BUILD and two CONDITIONAL votes; the fifth seat was
 reserved for a fresh final read. S2 received **5 BUILD / 0 CONDITIONAL / 0 REJECT**.

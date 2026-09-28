@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the structure and commit binding of a Runweft PR review receipt."""
+"""Validate an optional Runweft PR review receipt when one is supplied."""
 
 from __future__ import annotations
 
@@ -21,41 +21,23 @@ BASE_SEATS = {
     "implementation/developer-experience",
     "evaluation/confounds",
 }
-FULL_BOARD_SEATS = SEATS
 SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
 PLACEHOLDER_RE = re.compile(
-    r"(?i)(?:REPLACE[_ -]?WITH|WHY THIS SEAT|^\s*(?:TODO|TBD|PLACEHOLDER)\b|"
+    r"(?i)(?:REPLACE[_ -]?WITH|^\s*(?:TODO|TBD|PLACEHOLDER)\b|"
     r"^\s*(?:N\s*/\s*A|N\.?\s*A|NOT\s+APPLICABLE)\s*[.!]?\s*$)"
 )
 FINDING_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*-[0-9]+$")
 RECEIPT_RE = re.compile(
     r"(?ms)^```agent-review[ \t]*\r?\n(.*?)^```[ \t]*\r?$"
 )
-FULL_BOARD_PATHS = {
-    "AGENTS.md",
-    "CONTRIBUTING.md",
-    ".github/PULL_REQUEST_TEMPLATE.md",
-    ".github/branch-protection-main.json",
-    ".github/scripts/validate_agent_review.py",
-    "SECURITY.md",
-    "docs/evaluation-protocol.md",
-    "docs/threat-model.md",
-    "spec.md",
-}
-FULL_BOARD_PREFIXES = (
-    ".github/scripts/",
-    ".github/workflows/",
-    "docs/architecture/",
-    "docs/normative/",
-    "schemas/",
-)
-SECURITY_PATHS = FULL_BOARD_PREFIXES + (
+SECURITY_PATHS = (
     ".github/branch-protection-main.json",
     ".github/scripts/",
     ".github/workflows/",
     "AGENTS.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
+    "docs/agents/",
     "docs/threat-model.md",
     "migrations/",
 )
@@ -66,6 +48,11 @@ SYSTEMS_PATHS = (
     "crates/runweft-cli/",
     "migrations/",
     "schemas/",
+)
+PRODUCT_PATHS = (
+    "spec.md",
+    "docs/architecture/",
+    "docs/normative/",
 )
 
 
@@ -126,27 +113,32 @@ def is_inside_html_comment(text: str, position: int) -> bool:
     return inside_comment
 
 
-def is_full_board_path(path: str) -> bool:
-    return path in FULL_BOARD_PATHS or path.startswith(FULL_BOARD_PREFIXES)
+def matches_path(path: str, target: str) -> bool:
+    return path == target or (target.endswith("/") and path.startswith(target))
 
 
 def needs_seat(paths: set[str], targets: tuple[str, ...]) -> bool:
-    return any(path.startswith(targets) for path in paths)
+    return any(matches_path(path, target) for path in paths for target in targets)
 
 
 def main() -> None:
-    base_sha = os.environ.get("PR_BASE_SHA", "").lower()
-    head_sha = os.environ.get("PR_HEAD_SHA", "").lower()
     body = os.environ.get("PR_BODY", "")
-    if not SHA_RE.fullmatch(base_sha) or not SHA_RE.fullmatch(head_sha):
-        fail("GitHub did not provide valid base and head commit SHAs")
-
     matches = list(RECEIPT_RE.finditer(body))
+    if not matches:
+        if "```agent-review" in body:
+            fail("agent-review block is malformed or missing its closing fence")
+        print("agent-review-record: no optional receipt supplied")
+        return
     if len(matches) != 1:
-        fail("PR description must contain exactly one ```agent-review JSON block")
+        fail("PR description must contain at most one ```agent-review JSON block")
     match = matches[0]
     if is_inside_html_comment(body, match.start()):
         fail("agent-review JSON block must be visible outside HTML comments")
+
+    base_sha = os.environ.get("PR_BASE_SHA", "").lower()
+    head_sha = os.environ.get("PR_HEAD_SHA", "").lower()
+    if not SHA_RE.fullmatch(base_sha) or not SHA_RE.fullmatch(head_sha):
+        fail("GitHub did not provide valid base and head commit SHAs")
     try:
         receipt = parse_receipt_json(match.group(1))
     except (json.JSONDecodeError, DuplicateJSONKeyError) as exc:
@@ -154,7 +146,7 @@ def main() -> None:
     if not isinstance(receipt, dict):
         fail("review receipt must be a JSON object")
 
-    if receipt.get("protocol") != "runweft-agent-review/v1":
+    if receipt.get("protocol") != "runweft-agent-review/v2":
         fail("unsupported or missing review protocol version")
     reviewed_sha = receipt.get("reviewed_head_sha")
     if not isinstance(reviewed_sha, str) or reviewed_sha.lower() != head_sha:
@@ -163,6 +155,7 @@ def main() -> None:
     if not nonempty(implementer):
         fail("implementer_agent must identify the implementing agent")
 
+    paths = changed_paths(base_sha, head_sha)
     required = receipt.get("required_seats")
     if not isinstance(required, list) or any(
         not isinstance(seat, str) or seat not in SEATS for seat in required
@@ -171,21 +164,12 @@ def main() -> None:
     required_set = set(required)
     if len(required_set) != len(required) or not BASE_SEATS.issubset(required_set):
         fail("required_seats must be unique and include implementation and evaluation")
-    omitted = receipt.get("omitted_seats")
-    if not isinstance(omitted, list):
-        fail("omitted_seats must list every seat not included in required_seats")
-    omitted_set: set[str] = set()
-    for omission in omitted:
-        if not isinstance(omission, dict):
-            fail("each omitted seat must have a reason")
-        seat = omission.get("seat")
-        if not isinstance(seat, str) or seat not in SEATS or seat in omitted_set:
-            fail("omitted seats must be recognized and appear once")
-        if not nonempty(omission.get("reason")):
-            fail(f"omitted seat {seat} requires a relevance reason")
-        omitted_set.add(seat)
-    if required_set & omitted_set or required_set | omitted_set != SEATS:
-        fail("required and omitted seats must account for all five review roles")
+    if needs_seat(paths, SECURITY_PATHS) and "adversarial/security" not in required_set:
+        fail("this change's security and workflow paths require adversarial/security review")
+    if needs_seat(paths, SYSTEMS_PATHS) and "systems/durability" not in required_set:
+        fail("this change's state, protocol, schema, and migration paths require systems/durability review")
+    if needs_seat(paths, PRODUCT_PATHS) and "product/scope" not in required_set:
+        fail("this change's specification and architecture paths require product/scope review")
 
     reviews = receipt.get("reviews")
     if not isinstance(reviews, list):
@@ -213,11 +197,12 @@ def main() -> None:
             fail(f"review for {seat} must include a concise report summary")
         reviewed_seats.add(seat)
         reviewers.add(reviewer_key)
-    if not required_set.issubset(reviewed_seats):
-        missing = ", ".join(sorted(required_set - reviewed_seats))
-        fail(f"missing required reviewer seats: {missing}")
     if reviewed_seats != required_set:
-        fail("required_seats must list every reviewer seat in the receipt")
+        missing = ", ".join(sorted(required_set - reviewed_seats))
+        unexpected = ", ".join(sorted(reviewed_seats - required_set))
+        if missing:
+            fail(f"missing required reviewer seats: {missing}")
+        fail(f"review seats not listed in required_seats: {unexpected}")
 
     evaluation = receipt.get("evaluation")
     if not isinstance(evaluation, dict):
@@ -266,21 +251,8 @@ def main() -> None:
             if not nonempty(closure.get("quote")) or not nonempty(closure.get("evidence")):
                 fail(f"blocker {finding_id} needs a closure quote and evidence for manual review")
 
-    paths = changed_paths(base_sha, head_sha)
-    full_board = receipt.get("full_board")
-    if not isinstance(full_board, bool):
-        fail("full_board must be true or false")
-    if any(is_full_board_path(path) for path in paths) and not full_board:
-        fail("this change requires full_board=true")
-    if full_board and not FULL_BOARD_SEATS.issubset(required_set):
-        fail("full_board=true requires all five seats in required_seats")
-    if needs_seat(paths, SECURITY_PATHS) and "adversarial/security" not in required_set:
-        fail("workflow, policy, and security-sensitive changes require adversarial/security review")
-    if needs_seat(paths, SYSTEMS_PATHS) and "systems/durability" not in required_set:
-        fail("core, protocol, schema, and migration changes require systems/durability review")
-
     print(
-        "agent-review-record: valid receipt for "
+        "agent-review-record: valid optional receipt for "
         f"{head_sha}; {len(reviewed_seats)} independent seats; "
         f"evaluation {eval_result}; {len(findings)} recorded findings"
     )

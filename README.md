@@ -13,7 +13,7 @@ There is no model access, tool execution, persistent ledger or security sandbox 
 - [Project state and next action](STATE.md)
 - [Implementation tickets](issues/README.md)
 - [Current board review record](docs/reviews/README.md)
-- [GitHub contribution rules](CONTRIBUTING.md)
+- [Local-first contributor workflow](CONTRIBUTING.md)
 - [Explorable architecture](docs/architecture/runweft-architecture.html)
 - [Language choices and researched comparisons](docs/research/runweft-design.md)
 - [Evaluation protocol](docs/evaluation-protocol.md)
@@ -21,27 +21,36 @@ There is no model access, tool execution, persistent ledger or security sandbox 
 ## Development
 
 Requirements: Rust 1.98.1 (pinned), Node 24 or 26, npm, Python 3.12+ and Git.
-Node 24 is the initial intended LTS production line; scaffold validation records
-the actual locally tested version. Lockfiles pin resolved dependencies. GitHub
-Actions is configured to check pull requests and pushes on Node 24 and 26; a
-workflow definition or green scaffold check does not establish runtime security.
+The lockfiles pin resolved dependencies. `npm run check` is the canonical local
+`VERIFY` command. It checks generated-contract drift, Rust format/lint/tests,
+TypeScript build/tests, Python helper tests, and the offline evaluation self-check.
 
-Runweft is developed through GitHub issues, focused branches, and pull requests.
-Independent expert agents review and evaluate every PR; CI checks the review receipt
-and scaffold code. GitHub human approval is not required for this solo-maintained
-project. Receipt checks validate completeness, not agent identity; see
-[CONTRIBUTING.md](CONTRIBUTING.md) for the full process. The working name has not
-been cleared for trademark or package use.
+The normal loop is local: inspect the task and Git state, implement, run
+`npm run check`, review the complete diff, and make an atomic commit. GitHub Issues,
+branches, and pull requests are optional when they add durable tracking, useful
+isolation, independent review, or coordination. GitHub Actions runs the clean
+Node 24/26 matrix on pushes and pull requests as a compatibility and reproducibility
+safety net; it is not the primary development loop. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow and risk-based review
+practice.
+
+For a fresh checkout or changed dependencies, run:
 
 ```sh
 npm ci --ignore-scripts
 npm run check
+```
+
+To inspect scaffold CLI metadata, run:
+
+```sh
 cargo run --locked -p runweft-cli -- status --json
 ```
 
 For the static development inspector, run `npm run typecheck` once, then `npm run dev`.
 It binds to loopback. It cannot control a daemon. `npm run generate` updates the
 provisional constant-only status bindings; `npm run check:generated` detects drift.
+The working name has not been cleared for trademark or package use.
 
 ## Layout
 

@@ -18,17 +18,25 @@ BASE_SHA = "0" * 40
 HEAD_SHA = "a" * 40
 
 
-def valid_receipt() -> dict[str, object]:
-    seats = sorted(validator.SEATS)
+def valid_receipt(paths: set[str] | None = None) -> dict[str, object]:
+    changed = paths if paths is not None else {".github/workflows/ci.yml"}
+    seats = set(validator.BASE_SEATS)
+    if validator.needs_seat(changed, validator.SECURITY_PATHS):
+        seats.add("adversarial/security")
+    if validator.needs_seat(changed, validator.SYSTEMS_PATHS):
+        seats.add("systems/durability")
+    if validator.needs_seat(changed, validator.PRODUCT_PATHS):
+        seats.add("product/scope")
+    ordered_seats = sorted(seats)
     reviews = [
         {
             "seat": seat,
             "reviewer_agent": f"reviewer-{index}",
             "reviewed_head_sha": HEAD_SHA,
             "verdict": "APPROVE",
-            "summary": f"Reviewed the frozen governance diff from the {seat} perspective.",
+            "summary": f"Reviewed the frozen change from the {seat} perspective.",
         }
-        for index, seat in enumerate(seats, start=1)
+        for index, seat in enumerate(ordered_seats, start=1)
     ]
     evaluation_reviewer = next(
         review["reviewer_agent"]
@@ -36,35 +44,30 @@ def valid_receipt() -> dict[str, object]:
         if review["seat"] == "evaluation/confounds"
     )
     return {
-        "protocol": "runweft-agent-review/v1",
+        "protocol": "runweft-agent-review/v2",
         "reviewed_head_sha": HEAD_SHA,
         "implementer_agent": "implementer",
-        "full_board": True,
-        "required_seats": seats,
-        "omitted_seats": [],
+        "required_seats": ordered_seats,
         "reviews": reviews,
         "evaluation": {
             "reviewer_agent": evaluation_reviewer,
             "result": "PASS",
-            "scope": "Governance validator and CI acceptance behavior; no runtime behavior.",
-            "evidence": "End-to-end validator cases cover valid and rejected receipts.",
+            "scope": "Workflow and review validator; no runtime behavior.",
+            "evidence": "Fixed validator cases cover both accepted and rejected receipts.",
         },
         "findings": [],
     }
 
 
 def invoke_main(
-    receipt: dict[str, object],
+    receipt: dict[str, object] | None,
     *,
     prefix: str = "",
     paths: set[str] | None = None,
 ) -> tuple[int, str, str]:
-    body = (
-        prefix
-        + "```agent-review\n"
-        + json.dumps(receipt)
-        + "\n```\n"
-    )
+    body = prefix
+    if receipt is not None:
+        body += "```agent-review\n" + json.dumps(receipt) + "\n```\n"
     stdout = io.StringIO()
     stderr = io.StringIO()
     environment = {
@@ -106,12 +109,13 @@ class ReceiptValidationHelpersTest(unittest.TestCase):
 
     def test_parse_receipt_json_rejects_duplicate_nested_keys(self) -> None:
         with self.assertRaises(validator.DuplicateJSONKeyError):
-            validator.parse_receipt_json('{"reviews":[{"seat":"systems","seat":"product"}]}')
+            validator.parse_receipt_json(
+                '{"reviews":[{"seat":"systems","seat":"product"}]}'
+            )
 
     def test_nonempty_rejects_placeholder_values(self) -> None:
         for value in (
             "REPLACE_WITH_REVIEWER_ID",
-            "WHY THIS SEAT IS NOT RELEVANT",
             "TODO: explain the evidence",
             "placeholder summary",
             "N/A",
@@ -123,11 +127,7 @@ class ReceiptValidationHelpersTest(unittest.TestCase):
 
     def test_nonempty_accepts_completed_values(self) -> None:
         self.assertTrue(validator.nonempty("Reviewed the exact PR commit."))
-        self.assertTrue(
-            validator.nonempty(
-                "Not applicable because this governance change alters no runtime behavior."
-            )
-        )
+        self.assertTrue(validator.nonempty("Not applicable because no runtime behavior changed."))
 
     def test_finding_ids_are_numbered_and_stable(self) -> None:
         for value in ("SYS-1", "security-review-2"):
@@ -143,10 +143,21 @@ class ReceiptValidationHelpersTest(unittest.TestCase):
 
 
 class ReceiptValidationMainTest(unittest.TestCase):
-    def test_main_accepts_complete_five_seat_receipt_for_changed_workflow(self) -> None:
-        code, stdout, stderr = invoke_main(valid_receipt())
+    def test_pr_template_does_not_prepopulate_an_optional_receipt(self) -> None:
+        repo_root = Path(__file__).resolve().parents[3]
+        template = (repo_root / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text()
+        self.assertNotIn("```agent-review", template)
+
+    def test_main_accepts_absent_optional_receipt(self) -> None:
+        code, stdout, stderr = invoke_main(None)
         self.assertEqual(code, 0, stderr)
-        self.assertIn("5 independent seats", stdout)
+        self.assertIn("no optional receipt supplied", stdout)
+
+    def test_main_accepts_risk_based_receipt_without_five_seat_board(self) -> None:
+        receipt = valid_receipt()
+        code, stdout, stderr = invoke_main(receipt)
+        self.assertEqual(code, 0, stderr)
+        self.assertIn("3 independent seats", stdout)
 
     def test_main_rejects_receipt_with_stale_exact_head_sha(self) -> None:
         receipt = valid_receipt()
@@ -160,21 +171,59 @@ class ReceiptValidationMainTest(unittest.TestCase):
         receipt["reviews"][0]["reviewed_head_sha"] = "b" * 40  # type: ignore[index]
         code, _stdout, stderr = invoke_main(receipt)
         self.assertEqual(code, 1)
-        self.assertIn("review for", stderr)
+        self.assertIn("exact current PR head SHA", stderr)
 
-    def test_main_requires_every_full_board_review_seat(self) -> None:
+    def test_main_requires_security_review_for_workflow_paths(self) -> None:
+        receipt = valid_receipt()
+        receipt["required_seats"].remove("adversarial/security")  # type: ignore[union-attr]
+        receipt["reviews"] = [
+            review for review in receipt["reviews"]
+            if review["seat"] != "adversarial/security"
+        ]  # type: ignore[index]
+        code, _stdout, stderr = invoke_main(receipt)
+        self.assertEqual(code, 1)
+        self.assertIn("require adversarial/security", stderr)
+
+    def test_main_requires_product_review_for_specification_paths(self) -> None:
+        receipt = valid_receipt({"spec.md"})
+        receipt["required_seats"].remove("product/scope")  # type: ignore[union-attr]
+        receipt["reviews"] = [
+            review for review in receipt["reviews"]
+            if review["seat"] != "product/scope"
+        ]  # type: ignore[index]
+        code, _stdout, stderr = invoke_main(receipt, paths={"spec.md"})
+        self.assertEqual(code, 1)
+        self.assertIn("require product/scope", stderr)
+
+    def test_main_requires_systems_review_for_schema_paths(self) -> None:
+        paths = {"schemas/runtime-status.schema.json"}
+        receipt = valid_receipt(paths)
+        receipt["required_seats"].remove("systems/durability")  # type: ignore[union-attr]
+        receipt["reviews"] = [
+            review for review in receipt["reviews"]
+            if review["seat"] != "systems/durability"
+        ]  # type: ignore[index]
+        code, _stdout, stderr = invoke_main(receipt, paths=paths)
+        self.assertEqual(code, 1)
+        self.assertIn("require systems/durability", stderr)
+
+    def test_main_accepts_combined_security_systems_and_product_risks(self) -> None:
+        paths = {
+            ".github/workflows/ci.yml",
+            "crates/runweft-protocol/src/lib.rs",
+            "spec.md",
+        }
+        receipt = valid_receipt(paths)
+        code, stdout, stderr = invoke_main(receipt, paths=paths)
+        self.assertEqual(code, 0, stderr)
+        self.assertIn("5 independent seats", stdout)
+
+    def test_main_requires_every_listed_review_seat(self) -> None:
         receipt = valid_receipt()
         receipt["reviews"] = receipt["reviews"][:-1]  # type: ignore[index]
         code, _stdout, stderr = invoke_main(receipt)
         self.assertEqual(code, 1)
         self.assertIn("missing required reviewer seats", stderr)
-
-    def test_main_requires_full_board_for_workflow_changes(self) -> None:
-        receipt = valid_receipt()
-        receipt["full_board"] = False
-        code, _stdout, stderr = invoke_main(receipt)
-        self.assertEqual(code, 1)
-        self.assertIn("requires full_board=true", stderr)
 
     def test_main_rejects_placeholder_not_applicable_evaluation_reason(self) -> None:
         receipt = valid_receipt()
@@ -200,7 +249,7 @@ class ReceiptValidationMainTest(unittest.TestCase):
         receipt = valid_receipt()
         receipt["findings"] = [
             {
-                "id": "SYS-1",
+                "id": "SEC-1",
                 "severity": "blocker",
                 "location": "validator.py:100",
                 "impact": "An unclosed blocker could be merged.",
@@ -208,7 +257,7 @@ class ReceiptValidationMainTest(unittest.TestCase):
                 "status": "closed",
                 "closure": {
                     "commit": HEAD_SHA,
-                    "quote": "if status != closed:",
+                    "quote": "if finding.get(\"status\") != \"closed\":",
                     "evidence": "The current validator checks closure status.",
                 },
             }
@@ -221,7 +270,7 @@ class ReceiptValidationMainTest(unittest.TestCase):
         receipt = valid_receipt()
         receipt["findings"] = [
             {
-                "id": "SYS-1",
+                "id": "SEC-1",
                 "severity": "blocker",
                 "location": "validator.py:100",
                 "impact": "An unclosed blocker could be merged.",
@@ -229,7 +278,7 @@ class ReceiptValidationMainTest(unittest.TestCase):
                 "status": "open",
                 "closure": {
                     "commit": HEAD_SHA,
-                    "quote": "if status != closed:",
+                    "quote": "if finding.get(\"status\") != \"closed\":",
                     "evidence": "The current validator checks closure status.",
                 },
             }
@@ -243,6 +292,11 @@ class ReceiptValidationMainTest(unittest.TestCase):
         code, _stdout, stderr = invoke_main(receipt)
         self.assertEqual(code, 1)
         self.assertIn("closure must bind to the final head SHA", stderr)
+
+    def test_main_rejects_malformed_receipt_marker(self) -> None:
+        code, _stdout, stderr = invoke_main(None, prefix="```agent-review\n{")
+        self.assertEqual(code, 1)
+        self.assertIn("block is malformed", stderr)
 
     def test_main_rejects_receipt_hidden_inside_html_comment(self) -> None:
         code, _stdout, stderr = invoke_main(valid_receipt(), prefix="<!-- hidden\n")
