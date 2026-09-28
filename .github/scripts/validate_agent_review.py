@@ -23,6 +23,9 @@ BASE_SEATS = {
 }
 FULL_BOARD_SEATS = SEATS
 SHA_RE = re.compile(r"^[0-9a-f]{40}$", re.IGNORECASE)
+PLACEHOLDER_RE = re.compile(
+    r"(?i)(?:REPLACE[_ -]?WITH|WHY THIS SEAT|^\s*(?:TODO|TBD|PLACEHOLDER)\b)"
+)
 RECEIPT_RE = re.compile(
     r"(?ms)^```agent-review[ \t]*\r?\n(.*?)^```[ \t]*\r?$"
 )
@@ -70,7 +73,11 @@ def fail(message: str) -> None:
 
 
 def nonempty(value: object) -> bool:
-    return isinstance(value, str) and bool(value.strip())
+    return (
+        isinstance(value, str)
+        and bool(value.strip())
+        and not PLACEHOLDER_RE.search(value)
+    )
 
 
 def changed_paths(base_sha: str, head_sha: str) -> set[str]:

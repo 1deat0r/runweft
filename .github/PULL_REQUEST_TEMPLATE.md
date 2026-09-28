@@ -33,9 +33,9 @@ independent seats must review the same frozen commit before publishing the recei
     "evaluation/confounds"
   ],
   "omitted_seats": [
-    { "seat": "systems/durability", "reason": "WHY THIS SEAT IS NOT RELEVANT" },
-    { "seat": "adversarial/security", "reason": "WHY THIS SEAT IS NOT RELEVANT" },
-    { "seat": "product/scope", "reason": "WHY THIS SEAT IS NOT RELEVANT" }
+    { "seat": "systems/durability", "reason": "REPLACE_WITH_OMITTED_SEAT_REASON" },
+    { "seat": "adversarial/security", "reason": "REPLACE_WITH_OMITTED_SEAT_REASON" },
+    { "seat": "product/scope", "reason": "REPLACE_WITH_OMITTED_SEAT_REASON" }
   ],
   "reviews": [],
   "evaluation": {
