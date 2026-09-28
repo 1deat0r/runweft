@@ -34,19 +34,20 @@ The public GitHub repository `1deat0r/runweft` is the canonical source of truth.
 This project folder is a working checkout of that repository. All changes intended
 for Runweft must be recorded on GitHub through an issue and pull request; local
 editing is allowed, but local-only completion and direct commits or pushes to
-`main` are not. The initial public bootstrap commit establishes this workflow;
+`main` are not. The initial public bootstrap commits establish this workflow;
 the PR-only rule applies to every subsequent change.
 
 - Start from the matching GitHub issue or existing numbered ticket, create a
   focused branch, and link the issue in the pull request. An issue, a board vote,
   or CI success does not grant implementation authority. The user must authorize
   the scope; proposed runtime tickets stay proposed until then.
-- Main is protected. A pull request needs a linked GitHub issue and passing
-  `check (24)` and `check (26)`,
-  one approval from a GitHub reviewer other than the latest pusher, resolved review
-  conversations, and a current base branch. Stale approvals are dismissed. Admins
-  follow the same rules; do not bypass them. Merge with squash to keep history
-  linear. If no independent reviewer is available, leave the PR open.
+- Main is protected. A human-authored pull request needs a linked GitHub issue and
+  passing `check (24)` and `check (26)`. Dependabot version-update PRs are exempt
+  from the issue-reference step, but must pass the same checks and review gate.
+  Every PR also needs one approval from a GitHub reviewer other than the latest
+  pusher, resolved review conversations, and a current base branch. Stale approvals
+  are dismissed. Admins follow the same rules; do not bypass them. Merge with squash
+  to keep history linear. If no independent reviewer is available, leave the PR open.
 - The author/implementer does not review their own change. Select independent
   review roles based on the change: systems/durability, adversarial security,
   implementation/developer experience, evaluation/confounds, and product/scope.

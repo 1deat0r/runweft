@@ -2,7 +2,7 @@
 
 **Policy date: 2026-09-28.** The public repository at
 <https://github.com/1deat0r/runweft> is the canonical record. Work in the linked
-local checkout is welcome, but every change after the one-time bootstrap commit
+local checkout is welcome, but every change after the one-time bootstrap commits
 must reach `main` through GitHub.
 
 ## Before implementation
@@ -18,8 +18,9 @@ must reach `main` through GitHub.
 
 - Branch from the current `main` using `feat/<issue>-<slug>`, `fix/<issue>-<slug>`,
   `docs/<issue>-<slug>`, or `security/<issue>-<slug>`.
-- Every pull request must reference a GitHub issue; CI blocks PRs with no `#<number>`
-  reference in the description.
+- Every human-authored pull request must reference a GitHub issue; CI blocks PRs
+  with no `#<number>` reference in the description. Dependabot update PRs are the
+  only issue-reference exception and remain subject to all checks and review gates.
 - Keep a pull request focused and link its issue with `Closes #<number>` when the
   change fully resolves that issue. Explain scope, contract changes, evidence,
   risks, and anything not checked using the pull request template.
