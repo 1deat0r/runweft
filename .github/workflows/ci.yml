@@ -1,10 +1,37 @@
 name: scaffold checks
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
 permissions:
   contents: read
 jobs:
+  agent-review-record:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+      - name: Validate independent agent review receipt
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 .github/scripts/validate_agent_review.py
   check:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: read
     strategy:
       matrix:
         node: ['24', '26']
@@ -12,6 +39,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
       - name: Require a linked GitHub issue
         if: >-
           github.event_name == 'pull_request' &&
@@ -19,18 +49,26 @@ jobs:
           github.event.pull_request.user.login != 'dependabot[bot]'
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          if ! printf '%s' "$PR_BODY" | grep -Eq '#[0-9]+'; then
-            echo 'Every pull request must reference its GitHub issue.' >&2
+          if ! issue_numbers=$(python3 -B .github/scripts/validate_issue_references.py); then
             exit 1
           fi
+          for issue_number in $issue_numbers; do
+            if ! issue_kind=$(gh api "repos/$GITHUB_REPOSITORY/issues/$issue_number" --jq 'if has("pull_request") then "pull_request" else "issue" end'); then
+              echo "Referenced GitHub issue #$issue_number does not exist in this repository." >&2
+              exit 1
+            fi
+            if [ "$issue_kind" != 'issue' ]; then
+              echo "#${issue_number} is a pull request, not a GitHub issue." >&2
+              exit 1
+            fi
+          done
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: '3.12'
       - run: rustup toolchain install 1.98.1 --profile minimal --component rustfmt --component clippy
       - run: npm ci --ignore-scripts
       - run: npm run check

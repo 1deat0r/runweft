@@ -3,7 +3,9 @@
 **Policy date: 2026-09-28.** The public repository at
 <https://github.com/1deat0r/runweft> is the canonical record. Work in the linked
 local checkout is welcome, but every change after the one-time bootstrap commits
-must reach `main` through GitHub.
+must reach `main` through GitHub. Runweft is maintained by one person with
+autonomous expert agents; independent agent reviews and evaluations are required
+for each pull request.
 
 ## Before implementation
 
@@ -18,25 +20,35 @@ must reach `main` through GitHub.
 
 - Branch from the current `main` using `feat/<issue>-<slug>`, `fix/<issue>-<slug>`,
   `docs/<issue>-<slug>`, or `security/<issue>-<slug>`.
-- Every human-authored pull request must reference a GitHub issue; CI blocks PRs
-  with no `#<number>` reference in the description. Dependabot update PRs are the
-  only issue-reference exception and remain subject to all checks and review gates.
+- The first nonblank line of every human-authored pull request must be one
+  standalone GitHub issue reference: `Closes #N`, `Fixes #N`, `Resolves #N`, or
+  `References #N`. CI rejects any other first line, so a link inside prose, code,
+  or HTML cannot satisfy the rule. CI verifies that the referenced number is an
+  issue in this repository; reviewers verify that the issue authorizes the change.
+  Dependabot update PRs may omit an issue reference, but remain subject to all CI
+  and agent-review requirements.
 - Keep a pull request focused and link its issue with `Closes #<number>` when the
   change fully resolves that issue. Explain scope, contract changes, evidence,
   risks, and anything not checked using the pull request template.
-- Do not commit or push directly to `main`. The protected branch requires both
-  Node matrix checks, an up-to-date branch, resolved conversations, linear history,
-  and an independent approval from a GitHub user with write access who did not
-  make the latest push. Stale approvals are dismissed, and administrators are
-  subject to the same gate. There is no bypass path. If a second authorized reviewer
-  is not available, keep the PR open rather than weakening the gate.
-- Squash merge approved pull requests. GitHub deletes the merged feature branch.
+- Do not commit or push directly to `main`. The protected branch requires the Node
+  24 and 26 checks, the structured agent-review receipt check, an up-to-date branch,
+  resolved conversations, and linear history. GitHub human approval count is zero
+  to support the solo maintainer. The review receipt check is a completeness check,
+  not proof of agent identity or execution; independent agent runs and recorded
+  reports are required by project policy. The repository has no trusted agent
+  attestation integration. Administrators are included in branch protection, and
+  project policy forbids bypassing it. GitHub administrators can technically change
+  the rules; any policy or settings change must itself follow this issue-and-PR
+  process and include an audit record.
+- Squash merge pull requests after required agent reviews and CI pass. GitHub deletes
+  the merged feature branch.
 
 ## Independent review
 
-The person or agent implementing a change cannot count as its independent reviewer.
-Before requesting review, freeze the PR diff and identify the relevant seats from
-the project review board:
+The implementation agent cannot count as an independent reviewer. Every PR needs at
+least two distinct reviewer agents: implementation / developer experience and
+evaluation / confounds. Before requesting review, freeze the PR head commit and
+identify additional seats based on risk:
 
 - systems and durability;
 - adversarial security;
@@ -44,13 +56,30 @@ the project review board:
 - evaluation and confounds;
 - product and scope.
 
-Review the changed area with the relevant seats and record the reviewers and scope
-in the PR. Explain why an omitted seat is not relevant. Each reviewer works from
-the same frozen diff and reports independently; do not share peer verdicts before
-votes. Record blockers with exact file/line references, impact, and a testable
-closure condition. Re-check each closure against the final diff and evidence. Changes
-to normative spec or architecture use the complete frozen-snapshot board process in
-`spec.md` §12; approval of the implementation plan does not imply runtime acceptance.
+Review the changed area with all required seats and record reviewer agent IDs,
+role, verdict, summary, and the frozen commit SHA in the PR's `agent-review` JSON
+receipt. The evaluation reviewer records acceptance evidence or explains why
+evaluation is not applicable, plus evaluation scope and potential impact. Explain
+why any risk seat was omitted. Every reviewer works from the same frozen commit
+with a separate prompt and reports independently; do not share peer verdicts or
+findings before votes. Record why every omitted seat is not relevant. Record
+findings by unique numbered ID (such as `SYS-1`); blockers include exact file/line
+references, impact, and a testable closure condition. Re-check each closure against
+the final diff and evidence.
+Any new commit invalidates all previous review receipts. Changes to
+normative spec or architecture, this review protocol, CI workflows, or branch
+protection require all five seats and use the complete frozen-snapshot process in
+`spec.md` §12. Approval of an implementation plan does not imply runtime acceptance.
+
+The GitHub Actions `agent-review-record` check validates the public receipt's
+structure, reviewer distinctness, required seats, and exact head SHA. A receipt is
+not cryptographic proof that agents ran; Runweft currently has no trusted agent
+attestation service. Because pull-request workflows and the validator are part of
+the candidate diff, a PR can alter the check it runs. Workflow, receipt-validator,
+and branch-rule changes therefore require the full five-seat review, including
+adversarial review. The owner or orchestrating agent must independently launch the
+reviewers, preserve their separate reports, and publish a sanitized summary only
+after all votes. Keep vulnerability details private per [SECURITY.md](SECURITY.md).
 
 ## Verification and evidence
 

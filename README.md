@@ -26,10 +26,12 @@ the actual locally tested version. Lockfiles pin resolved dependencies. GitHub
 Actions is configured to check pull requests and pushes on Node 24 and 26; a
 workflow definition or green scaffold check does not establish runtime security.
 
-Runweft is developed through GitHub issues, focused branches, pull requests, and
-independent review. The `main` branch has enforced review and CI requirements; see
-[CONTRIBUTING.md](CONTRIBUTING.md). The working name has not been cleared for
-trademark or package use.
+Runweft is developed through GitHub issues, focused branches, and pull requests.
+Independent expert agents review and evaluate every PR; CI checks the review receipt
+and scaffold code. GitHub human approval is not required for this solo-maintained
+project. Receipt checks validate completeness, not agent identity; see
+[CONTRIBUTING.md](CONTRIBUTING.md) for the full process. The working name has not
+been cleared for trademark or package use.
 
 ```sh
 npm ci --ignore-scripts

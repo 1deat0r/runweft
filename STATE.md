@@ -6,7 +6,7 @@ Purpose: an independently authored successor harness with durable authority and 
 Current phase: scaffold and S2 specification complete; 5/5 expert BUILD votes; runtime implementation not started.
 Delivered: 2026-09-28, within the 14-day artifact deadline. Local scaffold checks passed.
 Public source repository: <https://github.com/1deat0r/runweft>.
-Development policy: issue-first GitHub branches and pull requests; protected `main` requires independent approval and Node 24/26 scaffold checks. Local check passed; CI results are recorded on GitHub.
+Development policy: every change uses an issue-linked GitHub pull request, independent expert-agent implementation and evaluation reviews, an exact-commit review receipt, and Node 24/26 scaffold checks. GitHub human approval is not required for this solo-maintained project. Local check passed; CI results are recorded on GitHub.
 Next action: implement ticket 01 through a GitHub issue and pull request when the owner authorizes it; all eight runtime tickets remain Proposed.
 Wake condition after handoff: owner requests implementation or revises requirements.
 No recurring automation is configured.
