@@ -1,6 +1,6 @@
-## Issue and authorization
+References #<N>
 
-Issue reference (for example, `References #<N>`):
+## Issue and authorization
 
 - User-authorized scope:
 - Relevant ticket and spec revision:

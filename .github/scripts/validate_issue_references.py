@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract standalone issue references outside Markdown code from a PR body."""
+"""Require a standalone GitHub issue reference as the first PR-body line."""
 
 from __future__ import annotations
 
@@ -10,70 +10,22 @@ from pathlib import Path
 
 
 REFERENCE_LINE_RE = re.compile(
-    r"^ {0,3}(?:[-*][ \t]+)?(?:closes|fixes|resolves|references)[ \t]+#([0-9]+)(?:[^0-9]|$)",
+    r"^ {0,3}(?:closes|fixes|resolves|references)[ \t]+#([1-9][0-9]*)[ \t]*$",
     re.IGNORECASE,
 )
 NUMBERED_REFERENCE_RE = re.compile(
-    r"(?i)\b(?:closes|fixes|resolves|references)[ \t]+#[0-9]+(?:[^0-9]|$)"
-)
-HTML_BLOCK_MARKER_RE = re.compile(
-    r"(?:<!--|<\?|<![A-Za-z]|<!\[CDATA\[|</?[A-Za-z][A-Za-z0-9-]*(?:[ \t/>]|$))",
-    re.IGNORECASE,
+    r"(?i)\b(?:closes|fixes|resolves|references)[ \t]+#[1-9][0-9]*\b"
 )
 
 
 def extract_issue_numbers(body: str) -> list[int]:
-    numbers: set[int] = set()
-    inline_ticks: int | None = None
+    """Return the issue number only when the first nonblank line is a reference."""
     for line in body.splitlines():
-        if inline_ticks is None and (line.startswith("    ") or line.startswith("\t")):
+        if not line.strip():
             continue
-
-        visible: list[str] = []
-        index = 0
-        while index < len(line):
-            character = line[index]
-            if inline_ticks is None and HTML_BLOCK_MARKER_RE.match(line, index):
-                return sorted(numbers)
-            if character == "`":
-                end = index + 1
-                while end < len(line) and line[end] == "`":
-                    end += 1
-                run_length = end - index
-                if inline_ticks is not None:
-                    if run_length == inline_ticks:
-                        inline_ticks = None
-                    index = end
-                    continue
-                if run_length >= 3:
-                    # Fail closed at any fence marker. Requiring the issue
-                    # reference before code keeps list and mismatched fences
-                    # from being mistaken for a rendered link.
-                    return sorted(numbers)
-                inline_ticks = run_length
-                index = end
-                continue
-
-            if character == "~":
-                end = index + 1
-                while end < len(line) and line[end] == "~":
-                    end += 1
-                if inline_ticks is None and end - index >= 3:
-                    return sorted(numbers)
-                if inline_ticks is None:
-                    visible.extend(line[index:end])
-                index = end
-                continue
-
-            if inline_ticks is None:
-                visible.append(character)
-            index += 1
-
-        reference = REFERENCE_LINE_RE.match("".join(visible))
-        if reference:
-            numbers.add(int(reference.group(1)))
-
-    return sorted(numbers)
+        reference = REFERENCE_LINE_RE.fullmatch(line)
+        return [int(reference.group(1))] if reference else []
+    return []
 
 
 def template_has_numbered_issue_example(template: str) -> bool:
@@ -94,7 +46,7 @@ def main() -> None:
     issue_numbers = extract_issue_numbers(os.environ.get("PR_BODY", ""))
     if not issue_numbers:
         print(
-            "Every human-authored pull request must include a standalone Closes, Fixes, Resolves, or References #N line outside code.",
+            "The first nonblank line of every human-authored pull request must be a standalone Closes, Fixes, Resolves, or References #N issue reference.",
             file=sys.stderr,
         )
         raise SystemExit(1)

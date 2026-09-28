@@ -10,52 +10,34 @@ import validate_issue_references as issue_references
 
 
 class IssueReferenceParsingTest(unittest.TestCase):
-    def test_extracts_standalone_and_list_references(self) -> None:
-        body = "Closes #12.\n\n- References #34"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [12, 34])
+    def test_accepts_a_standalone_first_nonblank_issue_reference(self) -> None:
+        body = "\n\nCloses #12\n\nReferences #34"
+        self.assertEqual(issue_references.extract_issue_numbers(body), [12])
 
-    def test_ignores_short_and_mismatched_fences(self) -> None:
-        body = (
-            "````markdown\n"
-            "```\n"
-            "References #12\n"
-            "~~~\n"
-            "Closes #34\n"
-            "````\n"
-            "Fixes #56\n"
-        )
-        self.assertEqual(issue_references.extract_issue_numbers(body), [])
-
-    def test_accepts_reference_before_code_examples_only(self) -> None:
-        body = "Closes #11\n```md\nReferences #22\n```"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [11])
-
-    def test_tilde_fence_stops_issue_scanning(self) -> None:
-        body = "~~~md\nReferences #12\n~~~\nResolves #34"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [])
-
-    def test_ignores_list_item_fenced_reference(self) -> None:
-        body = "- ```text\n  References #12\n  ```"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [])
-
-    def test_ignores_inline_and_indented_code_references(self) -> None:
-        body = "References `#12`\n    Closes #34\nReferences #56"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [56])
-
-    def test_requires_standalone_reference_line(self) -> None:
+    def test_rejects_narrative_before_reference(self) -> None:
         self.assertEqual(
-            issue_references.extract_issue_numbers("This PR closes #12"), []
+            issue_references.extract_issue_numbers("This PR fixes a bug.\nCloses #12"),
+            [],
         )
 
-    def test_ignores_multiline_inline_code_and_accepts_following_reference(self) -> None:
-        body = "Example `some code\nCloses #12\nacross lines`\nFixes #34"
-        self.assertEqual(issue_references.extract_issue_numbers(body), [34])
+    def test_rejects_issue_references_hidden_by_markdown_or_html(self) -> None:
+        bodies = (
+            "- Closes #12",
+            "`Closes #12`",
+            "```text\nCloses #12\n```",
+            "~~~text\nCloses #12\n~~~",
+            "<!-- Closes #12 -->",
+            "<pre>Closes #12</pre>",
+            "Example `unclosed\nCloses #12",
+        )
+        for body in bodies:
+            with self.subTest(body=body):
+                self.assertEqual(issue_references.extract_issue_numbers(body), [])
 
-    def test_html_comments_and_blocks_cannot_supply_references(self) -> None:
-        comment = "<!--\nCloses #12\n-->\nFixes #34"
-        raw_html = "<pre>\nCloses #12\n</pre>\nFixes #34"
-        self.assertEqual(issue_references.extract_issue_numbers(comment), [])
-        self.assertEqual(issue_references.extract_issue_numbers(raw_html), [])
+    def test_requires_the_whole_line_to_be_a_reference(self) -> None:
+        for body in ("Closes #12.\n", "Closes #12 explanation", "Closes #0"):
+            with self.subTest(body=body):
+                self.assertEqual(issue_references.extract_issue_numbers(body), [])
 
     def test_template_example_guard_rejects_numeric_example(self) -> None:
         self.assertTrue(

@@ -116,6 +116,16 @@ def changed_paths(base_sha: str, head_sha: str) -> set[str]:
     return {path for path in result.stdout.decode("utf-8").split("\0") if path}
 
 
+def is_inside_html_comment(text: str, position: int) -> bool:
+    inside_comment = False
+    for marker in re.finditer(r"<!--|-->", text[:position]):
+        if marker.group() == "<!--" and not inside_comment:
+            inside_comment = True
+        elif marker.group() == "-->" and inside_comment:
+            inside_comment = False
+    return inside_comment
+
+
 def is_full_board_path(path: str) -> bool:
     return path in FULL_BOARD_PATHS or path.startswith(FULL_BOARD_PREFIXES)
 
@@ -131,11 +141,14 @@ def main() -> None:
     if not SHA_RE.fullmatch(base_sha) or not SHA_RE.fullmatch(head_sha):
         fail("GitHub did not provide valid base and head commit SHAs")
 
-    matches = RECEIPT_RE.findall(body)
+    matches = list(RECEIPT_RE.finditer(body))
     if len(matches) != 1:
         fail("PR description must contain exactly one ```agent-review JSON block")
+    match = matches[0]
+    if is_inside_html_comment(body, match.start()):
+        fail("agent-review JSON block must be visible outside HTML comments")
     try:
-        receipt = parse_receipt_json(matches[0])
+        receipt = parse_receipt_json(match.group(1))
     except (json.JSONDecodeError, DuplicateJSONKeyError) as exc:
         fail(f"review receipt is not valid unambiguous JSON: {exc}")
     if not isinstance(receipt, dict):
