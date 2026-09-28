@@ -1,7 +1,7 @@
 # Implementation tickets
 
 Status vocabulary: Proposed → Ready → In progress → Verified; Blocked when an explicit dependency is unmet.
-All eight tickets are Proposed. Board approval does not mark them implemented or authorize work beyond the user request.
+Ticket 01 is Ready under the owner authorization recorded in GitHub issue #4; tickets 02–08 remain Proposed. Readiness or review approval does not mark work implemented or authorize scope beyond the user request.
 
 Decision rules are evaluated DIES first, then SURVIVES, otherwise WEAKENS; missing evidence never passes. Ticket 06 uses spec.md §11 and EP1 exactly.
 
