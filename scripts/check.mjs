@@ -7,6 +7,9 @@ const steps = [
   ['cargo', ['test', '--locked', '--workspace']],
   [npm, ['run', 'build']],
   [npm, ['test']],
+  ['python3', [
+    '-B', '-m', 'unittest', 'discover', '-s', '.github/scripts/tests', '-p', 'test_*.py',
+  ]],
   ['python3', ['-B', 'evals/analyze_evaluation.py', '--self-test']],
 ];
 for (const [command, args] of steps) {

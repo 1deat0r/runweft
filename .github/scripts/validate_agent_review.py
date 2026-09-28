@@ -72,6 +72,23 @@ def fail(message: str) -> None:
     raise SystemExit(1)
 
 
+class DuplicateJSONKeyError(ValueError):
+    """Raised when an object contains a repeated key."""
+
+
+def unique_json_object(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        if key in result:
+            raise DuplicateJSONKeyError(f"duplicate object key: {key}")
+        result[key] = value
+    return result
+
+
+def parse_receipt_json(raw: str) -> object:
+    return json.loads(raw, object_pairs_hook=unique_json_object)
+
+
 def nonempty(value: object) -> bool:
     return (
         isinstance(value, str)
@@ -110,9 +127,9 @@ def main() -> None:
     if len(matches) != 1:
         fail("PR description must contain exactly one ```agent-review JSON block")
     try:
-        receipt = json.loads(matches[0])
-    except json.JSONDecodeError as exc:
-        fail(f"review receipt is not valid JSON: {exc}")
+        receipt = parse_receipt_json(matches[0])
+    except (json.JSONDecodeError, DuplicateJSONKeyError) as exc:
+        fail(f"review receipt is not valid unambiguous JSON: {exc}")
     if not isinstance(receipt, dict):
         fail("review receipt must be a JSON object")
 

@@ -49,16 +49,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          ISSUE_REFERENCE_PATTERN='(^|[^[:alnum:]_])(closes|fixes|resolves|references)[[:space:]]+#[0-9]+([^0-9]|$)'
-          if grep -Eiq "$ISSUE_REFERENCE_PATTERN" .github/PULL_REQUEST_TEMPLATE.md; then
+          ISSUE_REFERENCE_PATTERN='^[[:space:]]*([*-][[:space:]]*)?(closes|fixes|resolves|references)[[:space:]]+#[0-9]+([^0-9]|$)'
+          TEMPLATE_ISSUE_REFERENCE_PATTERN='(^|[^[:alnum:]_])(closes|fixes|resolves|references)[[:space:]]+#[0-9]+([^0-9]|$)'
+          if grep -Eiq "$TEMPLATE_ISSUE_REFERENCE_PATTERN" .github/PULL_REQUEST_TEMPLATE.md; then
             echo 'The pull request template must not contain a number-shaped example issue reference.' >&2
             exit 1
           fi
-          if ! printf '%s' "$PR_BODY" | grep -Eiq "$ISSUE_REFERENCE_PATTERN"; then
+          issue_body=$(printf '%s' "$PR_BODY" | awk '
+            /^[[:space:]]*```/ || /^[[:space:]]*~~~/ { fenced = !fenced; next }
+            !fenced { print }
+          ')
+          if ! printf '%s' "$issue_body" | grep -Eiq "$ISSUE_REFERENCE_PATTERN"; then
             echo 'Every human-authored pull request must include Closes, Fixes, Resolves, or References #N.' >&2
             exit 1
           fi
-          issue_numbers=$(printf '%s' "$PR_BODY" | grep -Eio "$ISSUE_REFERENCE_PATTERN" | grep -Eo '#[0-9]+' | tr -d '#' | sort -u)
+          issue_numbers=$(printf '%s' "$issue_body" | grep -Eio "$ISSUE_REFERENCE_PATTERN" | grep -Eo '#[0-9]+' | tr -d '#' | sort -u)
           for issue_number in $issue_numbers; do
             if ! issue_kind=$(gh api "repos/$GITHUB_REPOSITORY/issues/$issue_number" --jq 'if has("pull_request") then "pull_request" else "issue" end'); then
               echo "Referenced GitHub issue #$issue_number does not exist in this repository." >&2
