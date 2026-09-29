@@ -13,3 +13,32 @@ Implementation is tracked by the active Codex goal. Design decision: see
 [`docs/adr/0002-durable-local-ledger.md`](../docs/adr/0002-durable-local-ledger.md).
 Scaffold checks do not satisfy this ticket's implementation acceptance. The 10,000
 crash cases and added restore/ownership fixtures remain mandatory acceptance work.
+
+## Foundation progress (2026-09-29)
+
+The first local milestone adds Linux profile ownership, a pinned local-filesystem
+boundary, the SQLite v1 schema, explicit profile creation versus existing-only open,
+profile identity/generation markers, exact schema preflight, and quarantine refusal on
+normal open. The marker catches partial database rollback when it survives, and normal
+open refuses to recreate a profile after both state files are lost. The core currently
+has 39 passing Rust tests, including fail-closed initialization, overflow preflight,
+schema-object rejection, and ordinary torn-marker recovery; `npm run check` passes.
+
+Known blocker before acknowledging or dispatching any command: the database and marker
+share a backup/rollback domain. A coherent snapshot rollback of both files—and
+acknowledged state loss within one coordinator generation—cannot be detected by this
+marker. A freshness witness outside the profile backup set and a recoverable
+acknowledgement protocol are still required. The command writer remains shutdown-only;
+command/event transactions, artifacts, backups, restore, and effect fencing are not
+implemented. This foundation is not production-ready and does not satisfy DUR-01 or
+DUR-07.
+
+Normal open cannot create a missing database from an `Initializing` marker; explicit
+create is required to finish provisioning. Torn nonempty initial-marker bytes fail
+closed for both open and create. Their shape cannot prove whether provisioning
+stopped before database creation or an initialized profile's marker was truncated
+after database loss. Recovery must use an explicit fresh-incarnation restore/reset
+path; initialization never guesses from ambiguous local state. A missing/empty marker
+and missing database can be treated as uninitialized only by explicit provisioning;
+normal coordinator startup must use `Ledger::open` and cannot route lost state to
+`Ledger::create`.

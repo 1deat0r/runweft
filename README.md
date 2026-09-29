@@ -5,10 +5,12 @@ and verification tied to exact artifacts. Working name; availability is not clea
 
 **Status: scaffold only.** The CLI can display metadata. The coordinator refuses to
 start, the example provider is metadata-only, and the inspector has no backend.
-There is no model access, tool execution, persistent ledger or security sandbox yet.
-The v1 protocol schema, bindings, and cross-language validators are implemented for
-contract testing; they do not provide a coordinator, durable state, production IPC,
-or effect execution.
+There is no model access, tool execution, command-processing ledger, or security
+sandbox. Ticket 02 has started with SQLite schema, profile identity, and exclusive
+ownership primitives, but they do not yet persist commands or events, provide restore
+safety, or authorize effects. The v1 protocol schema, bindings, and cross-language
+validators are implemented for contract testing; they do not provide a coordinator,
+production IPC, or effect execution.
 
 ## Start here
 
@@ -63,7 +65,7 @@ The working name has not been cleared for trademark or package use.
 ## Layout
 
 ```text
-crates/                 Rust protocol contracts, authority placeholder, CLI and daemon stub
+crates/                 Rust protocol contracts, ledger foundation, CLI and daemon stub
 packages/               TypeScript protocol contracts, adapter SDK and provider metadata example
 apps/inspector/         React/Vite static shell, no runtime connection
 schemas/                Status and versioned protocol sources and policies

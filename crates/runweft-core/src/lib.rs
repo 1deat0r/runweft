@@ -1,4 +1,6 @@
-//! Future authority boundary. This scaffold has no executor, database or network client.
+//! Future authority boundary. Durable profile identity exists, but this scaffold
+//! has no executor or network client.
+pub mod ledger;
 pub mod ownership;
 
 pub fn status() -> runweft_protocol::RuntimeStatus {

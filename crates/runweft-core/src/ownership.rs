@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io;
-use std::path::{Component, Path};
+use std::path::{Component, Path, PathBuf};
 
 /// A held operating-system lock for one profile directory.
 ///
@@ -22,6 +22,12 @@ pub enum OwnershipError {
     UnsupportedPath,
     InsecureProfileDirectory,
     InvalidLockFile,
+    InvalidDatabaseFile,
+    UnsupportedFilesystem(u64),
+    DatabaseFilesystemMismatch {
+        database_magic: u64,
+        profile_magic: u64,
+    },
     Io(io::Error),
 }
 
@@ -42,6 +48,20 @@ impl std::fmt::Display for OwnershipError {
             Self::InvalidLockFile => formatter.write_str(
                 "coordinator lock must be a private, single-link regular file owned by the current user",
             ),
+            Self::InvalidDatabaseFile => formatter.write_str(
+                "ledger database must be a private, single-link regular file owned by the current user",
+            ),
+            Self::UnsupportedFilesystem(magic) => write!(
+                formatter,
+                "profile filesystem {magic:#x} is not in the supported local-filesystem set",
+            ),
+            Self::DatabaseFilesystemMismatch {
+                database_magic,
+                profile_magic,
+            } => write!(
+                formatter,
+                "database filesystem {database_magic:#x} does not match profile filesystem {profile_magic:#x} on the same device",
+            ),
             Self::Io(error) => write!(formatter, "profile ownership I/O failed: {error}"),
         }
     }
@@ -56,7 +76,10 @@ impl std::error::Error for OwnershipError {
             | Self::UnsupportedPlatform
             | Self::UnsupportedPath
             | Self::InsecureProfileDirectory
-            | Self::InvalidLockFile => None,
+            | Self::InvalidLockFile
+            | Self::InvalidDatabaseFile
+            | Self::UnsupportedFilesystem(_)
+            | Self::DatabaseFilesystemMismatch { .. } => None,
         }
     }
 }
@@ -80,6 +103,102 @@ impl ProfileOwnership {
             let _ = profile_dir;
             Err(OwnershipError::UnsupportedPlatform)
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    pub(crate) fn ledger_path(&self) -> PathBuf {
+        use std::os::fd::AsRawFd;
+
+        PathBuf::from(format!(
+            "/proc/self/fd/{}/ledger.sqlite",
+            self._profile_dir.as_raw_fd()
+        ))
+    }
+
+    #[cfg(target_os = "linux")]
+    pub(crate) fn marker_file(&self) -> &File {
+        &self._lock_file
+    }
+
+    #[cfg(target_os = "linux")]
+    pub(crate) fn sync_profile_directory(&self) -> Result<(), OwnershipError> {
+        self._profile_dir.sync_all().map_err(OwnershipError::Io)
+    }
+
+    #[cfg(target_os = "linux")]
+    pub(crate) fn prepare_ledger_file(
+        &self,
+        create_if_missing: bool,
+    ) -> Result<bool, OwnershipError> {
+        use rustix::fs::{Mode, OFlags, openat};
+        use rustix::process::geteuid;
+        use std::os::unix::fs::MetadataExt;
+
+        let flags = OFlags::RDWR | OFlags::CLOEXEC | OFlags::NOFOLLOW | OFlags::NONBLOCK;
+        let (file, existed) =
+            match openat(&self._profile_dir, "ledger.sqlite", flags, Mode::empty()) {
+                Ok(file) => (Some(File::from(file)), true),
+                Err(rustix::io::Errno::NOENT) if !create_if_missing => (None, false),
+                Err(rustix::io::Errno::NOENT) => match openat(
+                    &self._profile_dir,
+                    "ledger.sqlite",
+                    flags | OFlags::CREATE | OFlags::EXCL,
+                    Mode::RUSR | Mode::WUSR,
+                ) {
+                    Ok(file) => (Some(File::from(file)), false),
+                    Err(rustix::io::Errno::EXIST) => (
+                        Some(File::from(
+                            openat(&self._profile_dir, "ledger.sqlite", flags, Mode::empty())
+                                .map_err(as_io)?,
+                        )),
+                        true,
+                    ),
+                    Err(error) => return Err(OwnershipError::Io(as_io(error))),
+                },
+                Err(error) => return Err(OwnershipError::Io(as_io(error))),
+            };
+        if let Some(file) = file.as_ref() {
+            let metadata = file.metadata()?;
+            let mode = metadata.mode();
+            if !metadata.is_file()
+                || metadata.uid() != geteuid().as_raw()
+                || metadata.nlink() != 1
+                || mode & 0o077 != 0
+                || mode & 0o600 != 0o600
+            {
+                return Err(OwnershipError::InvalidDatabaseFile);
+            }
+
+            ensure_same_supported_filesystem(&self._profile_dir, file, metadata.dev())?;
+        }
+        let mut found_sidecar = false;
+        for sidecar in [
+            "ledger.sqlite-wal",
+            "ledger.sqlite-shm",
+            "ledger.sqlite-journal",
+        ] {
+            let sidecar = match openat(&self._profile_dir, sidecar, flags, Mode::empty()) {
+                Ok(file) => File::from(file),
+                Err(rustix::io::Errno::NOENT) => continue,
+                Err(error) => return Err(OwnershipError::Io(as_io(error))),
+            };
+            found_sidecar = true;
+            let metadata = sidecar.metadata()?;
+            if !metadata.is_file()
+                || metadata.uid() != geteuid().as_raw()
+                || metadata.nlink() != 1
+                || metadata.mode() & 0o022 != 0
+            {
+                return Err(OwnershipError::InvalidDatabaseFile);
+            }
+            ensure_same_supported_filesystem(&self._profile_dir, &sidecar, metadata.dev())?;
+        }
+
+        if !existed && found_sidecar {
+            return Err(OwnershipError::InvalidDatabaseFile);
+        }
+
+        Ok(existed)
     }
 
     #[cfg(target_os = "linux")]
@@ -143,11 +262,20 @@ impl ProfileOwnership {
             directory = next;
         }
 
+        let filesystem_type = rustix::fs::fstatfs(&directory).map_err(as_io)?.f_type as u64;
+        if !is_supported_local_filesystem(filesystem_type) {
+            return Err(OwnershipError::UnsupportedFilesystem(filesystem_type));
+        }
+
         let lock_file = File::from(
             openat(
                 &directory,
                 "coordinator.lock",
-                OFlags::RDWR | OFlags::CREATE | OFlags::NOFOLLOW | OFlags::CLOEXEC,
+                OFlags::RDWR
+                    | OFlags::CREATE
+                    | OFlags::NOFOLLOW
+                    | OFlags::NONBLOCK
+                    | OFlags::CLOEXEC,
                 Mode::RUSR | Mode::WUSR,
             )
             .map_err(as_io)?,
@@ -179,7 +307,50 @@ fn as_io(error: rustix::io::Errno) -> io::Error {
     error.into()
 }
 
-#[cfg(test)]
+#[cfg(target_os = "linux")]
+fn is_supported_local_filesystem(magic: u64) -> bool {
+    // Linux magic values from include/uapi/linux/magic.h. Unknown filesystems fail
+    // closed so remote or unreviewed locking/WAL semantics are not assumed safe.
+    matches!(
+        magic,
+        0x0000_ef53 // ext2/3/4
+            | 0x9123_683e // btrfs
+            | 0x5846_5342 // xfs
+            | 0xf2f5_2010 // f2fs
+            | 0xca45_1a4e // bcachefs
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn ensure_same_supported_filesystem(
+    profile_dir: &File,
+    file: &File,
+    file_device: u64,
+) -> Result<(), OwnershipError> {
+    use std::os::unix::fs::MetadataExt;
+
+    let profile_magic = rustix::fs::fstatfs(profile_dir).map_err(as_io)?.f_type as u64;
+    let file_magic = rustix::fs::fstatfs(file).map_err(as_io)?.f_type as u64;
+    let profile_device = profile_dir.metadata()?.dev();
+    if !is_supported_database_filesystem(profile_magic, file_magic, file_device == profile_device) {
+        return Err(OwnershipError::DatabaseFilesystemMismatch {
+            database_magic: file_magic,
+            profile_magic,
+        });
+    }
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn is_supported_database_filesystem(
+    profile_magic: u64,
+    database_magic: u64,
+    same_device: bool,
+) -> bool {
+    same_device && database_magic == profile_magic && is_supported_local_filesystem(database_magic)
+}
+
+#[cfg(all(test, target_os = "linux"))]
 mod tests {
     use super::{OwnershipError, ProfileOwnership};
     use std::fs;
@@ -189,22 +360,51 @@ mod tests {
 
     static NEXT_PROFILE: AtomicUsize = AtomicUsize::new(0);
 
+    #[test]
+    fn only_allows_known_local_filesystems() {
+        assert!(super::is_supported_local_filesystem(0x0000_ef53));
+        assert!(!super::is_supported_local_filesystem(0x0102_1994)); // tmpfs is volatile
+        assert!(!super::is_supported_local_filesystem(0x0000_6969)); // NFS
+        assert!(!super::is_supported_local_filesystem(0xff53_4d42)); // CIFS
+        assert!(!super::is_supported_local_filesystem(0x0102_1997)); // 9P
+        assert!(super::is_supported_database_filesystem(
+            0x0000_ef53,
+            0x0000_ef53,
+            true
+        ));
+        assert!(!super::is_supported_database_filesystem(
+            0x0000_ef53,
+            0x0102_1994,
+            true
+        ));
+        assert!(!super::is_supported_database_filesystem(
+            0x0000_ef53,
+            0x0000_ef53,
+            false
+        ));
+    }
+
     struct TempProfile(PathBuf);
 
     impl TempProfile {
         fn new() -> Self {
             let sequence = NEXT_PROFILE.fetch_add(1, Ordering::Relaxed);
-            let path = std::env::temp_dir().join(format!(
+            use std::os::unix::fs::PermissionsExt;
+
+            let test_root = std::env::var_os("HOME")
+                .map(PathBuf::from)
+                .expect("Linux test environment has a home directory")
+                .join(".runweft-test-profiles");
+            fs::create_dir_all(&test_root).expect("create local test directory");
+            fs::set_permissions(&test_root, fs::Permissions::from_mode(0o700))
+                .expect("make test directory private");
+            let path = test_root.join(format!(
                 "runweft-profile-owner-{}-{sequence}",
                 std::process::id()
             ));
             fs::create_dir(&path).expect("create temporary profile directory");
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                fs::set_permissions(&path, fs::Permissions::from_mode(0o700))
-                    .expect("make temporary profile private");
-            }
+            fs::set_permissions(&path, fs::Permissions::from_mode(0o700))
+                .expect("make temporary profile private");
             Self(path)
         }
     }
@@ -248,7 +448,6 @@ mod tests {
         ));
     }
 
-    #[cfg(target_os = "linux")]
     #[test]
     fn rejects_a_profile_directory_that_is_not_private() {
         use std::os::unix::fs::PermissionsExt;
@@ -260,7 +459,6 @@ mod tests {
         assert!(ProfileOwnership::acquire(&profile.0).is_err());
     }
 
-    #[cfg(target_os = "linux")]
     #[test]
     fn rejects_a_symlink_in_the_profile_path() {
         use std::os::unix::fs::symlink;
