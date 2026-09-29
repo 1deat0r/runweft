@@ -42,3 +42,14 @@ path; initialization never guesses from ambiguous local state. A missing/empty m
 and missing database can be treated as uninitialized only by explicit provisioning;
 normal coordinator startup must use `Ledger::open` and cannot route lost state to
 `Ledger::create`.
+
+## Freshness witness design (2026-09-29)
+
+ADR 0003 specifies a per-user freshness witness outside the profile backup unit, a
+pending/finalized commit protocol, recovery rules, restore checkpoint semantics, and
+effect-boundary fencing. It is accepted for Ticket 02 implementation after independent
+adversarial, durability, and evaluation review. This is design only: the witness,
+command application, restore, and dispatch paths are not implemented. Command
+acknowledgment and external effects remain unavailable; Ticket 02 acceptance remains
+unmet. The design's rollback guarantee is limited to profile-only rollback while the
+per-user witness survives.
