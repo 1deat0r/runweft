@@ -8,6 +8,8 @@ Runweft separates proposed work, accepted work, and external effects. Protocol m
 
 **Coordinator generation**: A durably allocated, never-reused fencing identifier for one owner of a profile incarnation. It advances on owner replacement and cannot wrap; a stale generation cannot admit commands or effects.
 
+**Profile ownership**: The single coordinator process holding the profile's operating-system lock from startup through shutdown. Writer serialization protects database writes; it does not establish profile ownership. Replacing the owner also advances its coordinator generation.
+
 **Graph revision**: An immutable version of a run's task graph, inputs, dependencies, and completion requirements.
 
 **Task**: A unit of requested work in a graph revision. It may have multiple attempts, but its accepted output is tied to an exact artifact and verification receipt.
